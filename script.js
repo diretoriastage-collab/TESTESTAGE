@@ -588,39 +588,47 @@ async function abrirModalAtivacao(id) {
     ).join('');
 
     const html = `
-        <div class="form-grid">
-            <div class="input-group"><label>Status</label><select id="editStatus">${statusOptions}</select></div>
-            <div class="input-group"><label>Observação</label><textarea id="editObservacao">${a.observacao || ''}</textarea></div>
-            <div class="input-group"><label>Nome Completo</label><input value="${a.nomeCompleto || ''}" id="editNomeCompleto"></div>
-            <div class="input-group"><label>Nome da Mãe</label><input value="${a.nomeMae || ''}" id="editNomeMae"></div>
-            <div class="input-group"><label>Data Nasc.</label><input value="${a.dataNasc || ''}" id="editDataNasc"></div>
-            <div class="input-group"><label>CPF</label><input value="${a.cpf || ''}" id="editCpf"></div>
-            <div class="input-group"><label>RG</label><input value="${a.rg || ''}" id="editRg"></div>
-            <div class="input-group"><label>Órgão Exp.</label><input value="${a.orgaoExpeditor || ''}" id="editOrgaoExpeditor"></div>
-            <div class="input-group"><label>Data Exp.</label><input value="${a.dataExpedicao || ''}" id="editDataExpedicao"></div>
-            <div class="input-group"><label>Email</label><input value="${a.email || ''}" id="editEmail"></div>
-            <div class="input-group"><label>Tel 1</label><input value="${a.telefone1 || ''}" id="editTelefone1"></div>
-            <div class="input-group"><label>Tel 2</label><input value="${a.telefone2 || ''}" id="editTelefone2"></div>
-            <div class="input-group"><label>CEP</label><input value="${a.cep || ''}" id="editCep"></div>
-            <div class="input-group"><label>Logradouro</label><input value="${a.logradouro || ''}" id="editLogradouro"></div>
-            <div class="input-group"><label>N°</label><input value="${a.numero || ''}" id="editNumero"></div>
-            <div class="input-group"><label>Complemento</label><input value="${a.complemento || ''}" id="editComplemento"></div>
-            <div class="input-group"><label>Bairro</label><input value="${a.bairro || ''}" id="editBairro"></div>
-            <div class="input-group"><label>Estado</label><input value="${a.uf || ''}" id="editUf"></div>
-            <div class="input-group"><label>Cidade</label><input value="${a.cidade || ''}" id="editCidade"></div>
-            <div class="input-group"><label>Ponto Ref.</label><input value="${a.pontoReferencia || ''}" id="editPontoReferencia"></div>
-            <div class="input-group"><label>Velocidade</label><input value="${a.velocidade || ''}" id="editVelocidade"></div>
-            <div class="input-group"><label>Produto</label><input value="${a.produto || a.plano || ''}" id="editProduto"></div>
-            <div class="input-group"><label>Valor</label><input value="${a.valor || ''}" id="editValor"></div>
-            <div class="input-group"><label>Vencimento</label><input value="${a.vencimento || ''}" id="editVencimento"></div>
-            <div class="input-group"><label>Pagamento</label><input value="${a.formaPagamento || ''}" id="editFormaPagamento"></div>
-            <div class="input-group"><label>HP</label><input value="${a.hp || ''}" id="editHp"></div>
-            <div class="input-group"><label>Viabilidade</label><input value="${a.viabilidade || ''}" id="editViabilidade"></div>
-            <div class="input-group"><label>Plano Tipo</label><input value="${a.planoTipo || ''}" id="editPlanoTipo"></div>
-            <div class="input-group"><label>Tipo Aprov.</label><input value="${a.tipoAprovacao || ''}" id="editTipoAprovacao"></div>
-        </div>
-    `;
-
+    <div class="form-grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+        <div class="input-group"><label>Status</label><select id="editStatus">${statusOptions}</select></div>
+        <div class="input-group"><label>Plano</label><input value="${a.produto || a.plano || ''}" id="editProduto"></div>
+        <div class="input-group"><label>Valor</label><input value="${a.valor || ''}" id="editValor"></div>
+        
+        <div class="input-group"><label>Nome Completo</label><input value="${a.nomeCompleto || ''}" id="editNomeCompleto"></div>
+        <div class="input-group"><label>CPF</label><input value="${a.cpf || ''}" id="editCpf"></div>
+        <div class="input-group"><label>Nome da Mãe</label><input value="${a.nomeMae || ''}" id="editNomeMae"></div>
+        
+        <div class="input-group"><label>Data Nasc.</label><input value="${a.dataNasc || ''}" id="editDataNasc"></div>
+        <div class="input-group"><label>RG</label><input value="${a.rg || ''}" id="editRg"></div>
+        <div class="input-group"><label>Órgão Exp.</label><input value="${a.orgaoExpeditor || ''}" id="editOrgaoExpeditor"></div>
+        
+        <div class="input-group"><label>Data Exp.</label><input value="${a.dataExpedicao || ''}" id="editDataExpedicao"></div>
+        <div class="input-group"><label>Email</label><input value="${a.email || ''}" id="editEmail"></div>
+        <div class="input-group"><label>Tel 1</label><input value="${a.telefone1 || ''}" id="editTelefone1"></div>
+        
+        <div class="input-group"><label>Tel 2</label><input value="${a.telefone2 || ''}" id="editTelefone2"></div>
+        <div class="input-group"><label>CEP</label><input value="${a.cep || ''}" id="editCep"></div>
+        <div class="input-group"><label>Logradouro</label><input value="${a.logradouro || ''}" id="editLogradouro"></div>
+        
+        <div class="input-group"><label>N°</label><input value="${a.numero || ''}" id="editNumero"></div>
+        <div class="input-group"><label>Complemento</label><input value="${a.complemento || ''}" id="editComplemento"></div>
+        <div class="input-group"><label>Bairro</label><input value="${a.bairro || ''}" id="editBairro"></div>
+        
+        <div class="input-group"><label>Estado</label><input value="${a.uf || ''}" id="editUf"></div>
+        <div class="input-group"><label>Cidade</label><input value="${a.cidade || ''}" id="editCidade"></div>
+        <div class="input-group"><label>Ponto Ref.</label><input value="${a.pontoReferencia || ''}" id="editPontoReferencia"></div>
+        
+        <div class="input-group"><label>Velocidade</label><input value="${a.velocidade || ''}" id="editVelocidade"></div>
+        <div class="input-group"><label>Vencimento</label><input value="${a.vencimento || ''}" id="editVencimento"></div>
+        <div class="input-group"><label>Pagamento</label><input value="${a.formaPagamento || ''}" id="editFormaPagamento"></div>
+        
+        <div class="input-group"><label>HP</label><input value="${a.hp || ''}" id="editHp"></div>
+        <div class="input-group"><label>Viabilidade</label><input value="${a.viabilidade || ''}" id="editViabilidade"></div>
+        <div class="input-group"><label>Plano Tipo</label><input value="${a.planoTipo || ''}" id="editPlanoTipo"></div>
+        
+        <div class="input-group"><label>Tipo Aprov.</label><input value="${a.tipoAprovacao || ''}" id="editTipoAprovacao"></div>
+        <div class="input-group"><label>Observação</label><textarea id="editObservacao" style="height:38px;">${a.observacao || ''}</textarea></div>
+    </div>
+`;
     document.getElementById('conteudoModalAtivacao').innerHTML = html;
     document.getElementById('infoContrato').value = a.contrato || '';
     document.getElementById('infoData').value = a.infoData || '';
