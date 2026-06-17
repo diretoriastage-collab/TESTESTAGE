@@ -85,7 +85,7 @@ function dataParaBR(d) {
 }
 
 // ===== CONFIGURAÇÕES =====
-const GOOGLE_SHEET_VENDAS_URL = 'https://script.google.com/macros/s/AKfycbxDg0039S1CzLlANXrsxdWSNx8fB1wpzJc0FhWMV9if9d-IHufvIL40rSEIVz9pqt4o/exec'; // SUBSTITUA PELO SEU NOVO URL
+const GOOGLE_SHEET_VENDAS_URL = 'https://script.google.com/macros/s/AKfycbzO1fsW8m0QVFQAzwtu0hRMbJKD7VuOe9e8Mvel9JlSsbmKXLrFUDasi42LUUWRDwEW/exec'; // SUBSTITUA PELO SEU NOVO URL
 
 let sessao = JSON.parse(sessionStorage.getItem('stage_session'));
 let comparativoAtual = 'diario';
@@ -773,6 +773,7 @@ async function fecharModalAtivacao() {
 
 function abrirModalInfoAdicional() {
     if (!vendaSendoVisualizada) { alert('Nenhuma venda selecionada.'); return; }
+     carregarDropdownAtivadoPor();  // <-- nova linha
     document.getElementById('modalInfoAdicional').style.display = 'flex';
 }
 
@@ -785,12 +786,14 @@ function salvarInfoAdicional() {
         a.contrato = document.getElementById('infoContrato').value;
         a.infoData = document.getElementById('infoData').value;
         a.infoPeriodo = document.getElementById('infoPeriodo').value;
+        a.ativadoPor = document.getElementById('infoAtivadoPor')?.value || '';  // NOVO
         salvarDB();
         postParaGoogleSheets('atualizarInfoAdicional', {
             uuid: a.id,
             contrato: a.contrato,
             infoData: a.infoData,
             infoPeriodo: a.infoPeriodo
+            ativadoPor: a.ativadoPor  // NOVO
         });
         alert('✅ Informações adicionais salvas e sincronizadas!');
     }
@@ -1398,6 +1401,16 @@ function carregarUsuarios() {
         </td>
     </tr>`).join('');
     const cont = document.getElementById('contadorLixeira'); if (cont) cont.textContent = DB.usuarios.filter(u => u.deletedAt).length;
+}
+
+function carregarDropdownAtivadoPor() {
+    const select = document.getElementById('infoAtivadoPor');
+    if (!select) return;
+    select.innerHTML = '<option value="">Selecione</option>' +
+        DB.usuarios
+            .filter(u => u.ativo && !u.deletedAt)
+            .map(u => `<option value="${u.nome}" ${vendaSendoVisualizada?.ativadoPor === u.nome ? 'selected' : ''}>${u.nome}</option>`)
+            .join('');
 }
 
 function mostrarFormCadastro() { document.getElementById('formCadastro').style.display = 'block'; }
