@@ -85,7 +85,7 @@ function dataParaBR(d) {
 }
 
 // ===== CONFIGURAÇÕES =====
-const GOOGLE_SHEET_VENDAS_URL = 'https://script.google.com/macros/s/AKfycbwr5Oy9SE3PzQoO9i6Yx3_lrNPkEo8Z0NVTpkDADCLIcXE5AL8o9p8xjZ5NZCY7rgA/exec'; // SUBSTITUA PELO SEU NOVO URL
+const GOOGLE_SHEET_VENDAS_URL = 'https://script.google.com/macros/s/AKfycbxDg0039S1CzLlANXrsxdWSNx8fB1wpzJc0FhWMV9if9d-IHufvIL40rSEIVz9pqt4o/exec'; // SUBSTITUA PELO SEU NOVO URL
 
 let sessao = JSON.parse(sessionStorage.getItem('stage_session'));
 let comparativoAtual = 'diario';
@@ -231,20 +231,28 @@ async function postParaGoogleSheets(acao, dados = {}) {
 async function sincronizarUsuariosDaNuvem() {
   try {
     const resp = await fetchFromGS('listarUsuarios');
+    console.log('📥 Usuários recebidos da nuvem:', resp);
     if (resp && resp.usuarios && Array.isArray(resp.usuarios)) {
-      const existentes = {};
-      DB.usuarios.forEach(u => { if (!u.deletedAt) existentes[(u.usuario || '').toUpperCase()] = u; });
+      const usuariosDaNuvem = resp.usuarios.map(u => u.usuario.toUpperCase());
+      
+      // Remove usuários locais que NÃO estão na planilha
+      DB.usuarios = DB.usuarios.filter(u => {
+        if (u.deletedAt) return true; // mantém os que estão na lixeira
+        return usuariosDaNuvem.includes(u.usuario.toUpperCase());
+      });
+
+      // Atualiza ou adiciona os que vieram da nuvem
       resp.usuarios.forEach(uSheet => {
-        const login = String(uSheet.usuario || '').trim().toUpperCase();
-        if (!login) return;
-        if (existentes[login]) {
-          const u = existentes[login];
-          u.nome = uSheet.nome || u.nome;
-          u.email = uSheet.email || u.email;
-          u.categoria = uSheet.categoria || u.categoria;
-          u.tipo = uSheet.categoria || u.tipo;
-          u.ativo = uSheet.status === 'LIBERADO';
-          u.equipe = uSheet.equipe || u.equipe;
+        const login = uSheet.usuario.toUpperCase();
+        const existente = DB.usuarios.find(u => u.usuario.toUpperCase() === login && !u.deletedAt);
+        
+        if (existente) {
+          existente.nome = uSheet.nome;
+          existente.email = uSheet.email;
+          existente.categoria = uSheet.categoria || existente.categoria;
+          existente.tipo = uSheet.categoria || existente.tipo;
+          existente.ativo = uSheet.status === 'LIBERADO';
+          existente.equipe = uSheet.equipe || existente.equipe;
         } else {
           DB.usuarios.push({
             id: Date.now() + Math.random(),
@@ -260,12 +268,16 @@ async function sincronizarUsuariosDaNuvem() {
           });
         }
       });
-      salvarDB();
-      if (document.getElementById('secao-cadastro')?.classList.contains('section-active')) carregarUsuarios();
-    }
-  } catch (e) { console.error('Erro ao sincronizar usuários:', e); }
-}
 
+      salvarDB();
+      if (document.getElementById('secao-cadastro')?.classList.contains('section-active')) {
+        carregarUsuarios();
+      }
+    }
+  } catch (e) {
+    console.error('❌ Erro ao sincronizar usuários da nuvem:', e);
+  }
+}
 async function sincronizarStatusFlagsDaNuvem() {
   try {
     const resp = await fetchFromGS('listarStatusFlags');
@@ -1419,7 +1431,25 @@ function cadastrarUsuario() {
 }
 
 function toggleUsuario(id) { const u = DB.usuarios.find(u => u.id === id); if (u) { u.ativo = !u.ativo; salvarDB(); carregarUsuarios(); } }
-function excluirUsuario(id) { const u = DB.usuarios.find(u => u.id === id); if (!u) return; if (confirm(`⚠️ Excluir "${u.nome}"? Ele irá para a lixeira e perderá o acesso.`)) { u.deletedAt = new Date().toISOString(); u.ativo = false; salvarDB(); carregarUsuarios(); } }
+async function excluirUsuario(id) {
+    const u = DB.usuarios.find(u => u.id === id);
+    if (!u) return;
+    if (!confirm(`⚠️ Excluir "${u.nome}"? Ele será removido permanentemente da planilha e perderá o acesso.`)) return;
+    
+    try {
+        const resp = await fetchFromGS('removerUsuario', { usuario: u.usuario });
+        if (resp && resp.ok) {
+            DB.usuarios = DB.usuarios.filter(x => x.id !== id);
+            salvarDB();
+            carregarUsuarios();
+            alert('✅ Usuário excluído permanentemente!');
+        } else {
+            alert('❌ Erro ao excluir da planilha: ' + (resp?.erro || 'Erro desconhecido'));
+        }
+    } catch (err) {
+        alert('❌ Erro de comunicação.');
+    }
+}
 function abrirModalEditarPorUsuario(usuario) {
     const u = DB.usuarios.find(u => u.usuario === usuario && !u.deletedAt);
     if (!u) { alert('Usuário não encontrado. Recarregue a página.'); return; }
