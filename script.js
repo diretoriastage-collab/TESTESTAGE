@@ -85,7 +85,7 @@ function dataParaBR(d) {
 }
 
 // ===== CONFIGURAÇÕES =====
-const GOOGLE_SHEET_VENDAS_URL = 'https://script.google.com/macros/s/AKfycbzO1fsW8m0QVFQAzwtu0hRMbJKD7VuOe9e8Mvel9JlSsbmKXLrFUDasi42LUUWRDwEW/exec'; // SUBSTITUA PELO SEU NOVO URL
+const GOOGLE_SHEET_VENDAS_URL = 'https://script.google.com/macros/s/AKfycbwegEqf-1McwTqsOvi_xANGMQ0C0KBfKMEIWLIu8LvAfH7W8FW2hWrwlIdYtdaTaxfA/exec'; // SUBSTITUA PELO SEU NOVO URL
 
 let sessao = JSON.parse(sessionStorage.getItem('stage_session'));
 let comparativoAtual = 'diario';
@@ -472,6 +472,7 @@ async function buscarVendasAprovadasDaNuvem() {
                 finalizada: true,
                 instalacaoStatus: v.Instalação || 'Aguardando',
                 dataCriacao: v.DataCriacao || '',
+                observacao: v.Observacao || '',
                 createdAt: v.CreatedAt ? parseInt(v.CreatedAt) : (v['Data Aprovação'] ? new Date(v['Data Aprovação']).getTime() : Date.now())
             }));
             // NÃO associar por nome – remova qualquer forEach que tente fazer isso
@@ -915,6 +916,7 @@ function abrirModalVisualizacao(id) {
         ['Viabilidade', a.viabilidade],
         ['Plano Tipo', a.planoTipo],
         ['Tipo Aprov.', a.tipoAprovacao]
+        ['Observação', a.observacao || '']   // ← ADICIONE ESTA LINHA
     ];
     campos.forEach(([label, valor]) => {
         html += `<div class="input-group"><label>${label}</label><input value="${valor || ''}" readonly style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);"></div>`;
