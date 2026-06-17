@@ -792,7 +792,7 @@ function salvarInfoAdicional() {
             uuid: a.id,
             contrato: a.contrato,
             infoData: a.infoData,
-            infoPeriodo: a.infoPeriodo
+            infoPeriodo: a.infoPeriodo,
             ativadoPor: a.ativadoPor  // NOVO
         });
         alert('✅ Informações adicionais salvas e sincronizadas!');
