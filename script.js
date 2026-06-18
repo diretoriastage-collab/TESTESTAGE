@@ -94,7 +94,7 @@ function dataParaBR(d) {
 }
 
 // ===== CONFIGURAÇÕES =====
-const GOOGLE_SHEET_VENDAS_URL = 'https://script.google.com/macros/s/AKfycbxlGfstFZ_7MN4UjXZQU8q57ELoOck9fwNZ2hJH07raQvn09v-VnLoceYzkQCbfGHkn/exec';
+const GOOGLE_SHEET_VENDAS_URL = 'https://script.google.com/macros/s/AKfycbwegEqf-1McwTqsOvi_xANGMQ0C0KBfKMEIWLIu8LvAfH7W8FW2hWrwlIdYtdaTaxfA/exec'; // SUBSTITUA PELO SEU NOVO URL
 
 let sessao = JSON.parse(sessionStorage.getItem('stage_session'));
 let comparativoAtual = 'diario';
@@ -246,65 +246,66 @@ function ensureStageBadgeStyles() {
     if (document.getElementById('stage-badge-styles')) return;
     const style = document.createElement('style');
     style.id = 'stage-badge-styles';
-    style.textContent = '' +
-        '@keyframes stage-fire-glow {' +
-            '0% { box-shadow: 0 0 10px #ff4500, 0 0 20px #ff8c00, 0 0 30px #ff4500; transform: rotate(-8deg) scale(1); }' +
-            '50% { box-shadow: 0 0 20px #ff6347, 0 0 40px #ff4500, 0 0 60px #ff6347; transform: rotate(-5deg) scale(1.08); }' +
-            '100% { box-shadow: 0 0 10px #ff4500, 0 0 20px #ff8c00, 0 0 30px #ff4500; transform: rotate(-8deg) scale(1); }' +
-        '}' +
-        '.stage-new-badge {' +
-            'display: inline-flex;' +
-            'align-items: center;' +
-            'justify-content: center;' +
-            'min-width: 54px;' +
-            'height: 24px;' +
-            'padding: 0 10px;' +
-            'border-radius: 999px;' +
-            'background: linear-gradient(135deg,#ff8c00,#ff4500);' +
-            'color: #fff;' +
-            'font-weight: 800;' +
-            'font-size: 11px;' +
-            'text-transform: uppercase;' +
-            'transform: rotate(-8deg);' +
-            'text-shadow: 0 0 10px #fff, 0 0 20px #ff4500;' +
-            'animation: stage-fire-glow 1.2s ease-in-out infinite;' +
-        '}' +
-        '@keyframes stage-bonus-pulse {' +
-            '0%,100%{transform:scale(1);box-shadow:0 0 20px rgba(255,100,0,0.7);}' +
-            '50%{transform:scale(1.1);box-shadow:0 0 35px rgba(255,80,0,1);}' +
-        '}' +
-        '.stage-bonus-widget {' +
-            'position:fixed; bottom:22px; right:22px; width:80px; height:80px; border-radius:50%;' +
-            'background: radial-gradient(circle at top left,#ffd700,#ff4500);' +
-            'color:#fff; display:flex; align-items:center; justify-content:center; text-align:center;' +
-            'line-height:1.2; font-size:11px; font-weight:900;' +
-            'box-shadow:0 0 35px rgba(255,100,0,0.9); cursor:pointer; z-index:9999;' +
-            'animation: stage-bonus-pulse 1.4s ease-in-out infinite;' +
-        '}' +
-        '.stage-bonus-widget:hover { transform:scale(1.12); }' +
-        '.stage-bonus-modal-overlay {' +
-            'position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8);' +
-            'display:flex; align-items:center; justify-content:center; z-index:10000;' +
-        '}' +
-        '.stage-bonus-modal {' +
-            'width: min(500px, calc(100vw - 30px)); border-radius:32px;' +
-            'background:linear-gradient(145deg,#1a1f2b,#0d0f14); padding:25px 20px;' +
-            'box-shadow:0 0 60px rgba(255,100,0,0.5); color:#fff; text-align:center; position:relative;' +
-            'border: 1px solid rgba(255,140,0,0.3);' +
-        '}' +
-        '.stage-bonus-modal h2 { margin:0 0 10px; font-size:26px; color:#ffd700; }' +
-        '.stage-bonus-modal p { margin:8px 0; font-size:14px; color:#ddd; }' +
-        '.stage-bonus-modal .stage-prize {' +
-            'margin:15px auto; padding:15px; border-radius:20px;' +
-            'background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);' +
-            'font-size:14px; color:#ffd700; font-weight:700; text-align:left;' +
-        '}' +
-        '.stage-bonus-modal .stage-prize strong { color:#fff; }' +
-        '.stage-bonus-modal .stage-close-btn {' +
-            'margin-top:18px; padding:10px 20px; border:none; border-radius:30px;' +
-            'background:#ff5722; color:#fff; font-weight:700; cursor:pointer;' +
-            'font-size:14px;' +
-        '}';
+    style.textContent = `
+        @keyframes stage-fire-glow {
+            0% { box-shadow: 0 0 10px #ff4500, 0 0 20px #ff8c00, 0 0 30px #ff4500; transform: rotate(-8deg) scale(1); }
+            50% { box-shadow: 0 0 20px #ff6347, 0 0 40px #ff4500, 0 0 60px #ff6347; transform: rotate(-5deg) scale(1.08); }
+            100% { box-shadow: 0 0 10px #ff4500, 0 0 20px #ff8c00, 0 0 30px #ff4500; transform: rotate(-8deg) scale(1); }
+        }
+        .stage-new-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 54px;
+            height: 24px;
+            padding: 0 10px;
+            border-radius: 999px;
+            background: linear-gradient(135deg,#ff8c00,#ff4500);
+            color: #fff;
+            font-weight: 800;
+            font-size: 11px;
+            text-transform: uppercase;
+            transform: rotate(-8deg);
+            text-shadow: 0 0 10px #fff, 0 0 20px #ff4500;
+            animation: stage-fire-glow 1.2s ease-in-out infinite;
+        }
+        @keyframes stage-bonus-pulse {
+            0%,100%{transform:scale(1);box-shadow:0 0 20px rgba(255,100,0,0.7);}
+            50%{transform:scale(1.1);box-shadow:0 0 35px rgba(255,80,0,1);}
+        }
+        .stage-bonus-widget {
+            position:fixed; bottom:22px; right:22px; width:80px; height:80px; border-radius:50%;
+            background: radial-gradient(circle at top left,#ffd700,#ff4500);
+            color:#fff; display:flex; align-items:center; justify-content:center; text-align:center;
+            line-height:1.2; font-size:11px; font-weight:900;
+            box-shadow:0 0 35px rgba(255,100,0,0.9); cursor:pointer; z-index:9999;
+            animation: stage-bonus-pulse 1.4s ease-in-out infinite;
+        }
+        .stage-bonus-widget:hover { transform:scale(1.12); }
+        .stage-bonus-modal-overlay {
+            position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8);
+            display:flex; align-items:center; justify-content:center; z-index:10000;
+        }
+        .stage-bonus-modal {
+            width: min(500px, calc(100vw - 30px)); border-radius:32px;
+            background:linear-gradient(145deg,#1a1f2b,#0d0f14); padding:25px 20px;
+            box-shadow:0 0 60px rgba(255,100,0,0.5); color:#fff; text-align:center; position:relative;
+            border: 1px solid rgba(255,140,0,0.3);
+        }
+        .stage-bonus-modal h2 { margin:0 0 10px; font-size:26px; color:#ffd700; }
+        .stage-bonus-modal p { margin:8px 0; font-size:14px; color:#ddd; }
+        .stage-bonus-modal .stage-prize {
+            margin:15px auto; padding:15px; border-radius:20px;
+            background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);
+            font-size:14px; color:#ffd700; font-weight:700; text-align:left;
+        }
+        .stage-bonus-modal .stage-prize strong { color:#fff; }
+        .stage-bonus-modal .stage-close-btn {
+            margin-top:18px; padding:10px 20px; border:none; border-radius:30px;
+            background:#ff5722; color:#fff; font-weight:700; cursor:pointer;
+            font-size:14px;
+        }
+    `;
     document.head.appendChild(style);
 }
 
@@ -344,23 +345,26 @@ function mostrarModalBonusAtivo() {
     const overlay = document.createElement('div');
     overlay.id = 'stage-bonus-modal-overlay';
     overlay.className = 'stage-bonus-modal-overlay';
-    overlay.innerHTML = '<div class="stage-bonus-modal">' +
-        '<h2>🔥 Bônus Ativo!</h2>' +
-        '<p>Temos ' + ativa.length + ' ' + (ativa.length === 1 ? 'promoção' : 'promoções') + ' ativa' + (ativa.length > 1 ? 's' : '') + '. Confira os detalhes:</p>' +
-        ativa.map(function(p) {
-            return '<div class="stage-prize" style="margin-bottom:10px;">' +
-                '<div style="font-size:14px;">📌 <strong>' + p.tipo.toUpperCase() + '</strong></div>' +
-                '<div style="font-size:13px;">🎯 Meta: <strong>' + p.quantidade + '</strong></div>' +
-                '<div style="font-size:13px;">📅 Período: <strong>' + new Date(p.inicio).toLocaleDateString('pt-BR') + ' → ' + new Date(p.fim).toLocaleDateString('pt-BR') + '</strong></div>' +
-                '<div style="font-size:15px; color:#ffd700; font-weight:800;">🏆 Prêmio: ' + p.premio + '</div>' +
-                '</div>';
-        }).join('') +
-        '<p style="color:#ffddb3; font-size:13px;">Continue vendendo para garantir seu prêmio!</p>' +
-        '<button class="stage-close-btn" onclick="fecharModalBonusAtivo()">Entendido!</button>' +
-        '</div>';
-    overlay.onclick = function(e) { if (e.target === overlay) fecharModalBonusAtivo(); };
+    overlay.innerHTML = `
+        <div class="stage-bonus-modal">
+            <h2>🔥 Bônus Ativo!</h2>
+            <p>Temos ${ativa.length} ${ativa.length === 1 ? 'promoção' : 'promoções'} ativa${ativa.length > 1 ? 's' : ''}. Confira os detalhes:</p>
+            ${ativa.map(p => `
+                <div class="stage-prize" style="margin-bottom:10px;">
+                    <div style="font-size:14px;">📌 <strong>${p.tipo.toUpperCase()}</strong></div>
+                    <div style="font-size:13px;">🎯 Meta: <strong>${p.quantidade}</strong></div>
+                    <div style="font-size:13px;">📅 Período: <strong>${new Date(p.inicio).toLocaleDateString('pt-BR')} → ${new Date(p.fim).toLocaleDateString('pt-BR')}</strong></div>
+                    <div style="font-size:15px; color:#ffd700; font-weight:800;">🏆 Prêmio: ${p.premio}</div>
+                </div>
+            `).join('')}
+            <p style="color:#ffddb3; font-size:13px;">Continue vendendo para garantir seu prêmio!</p>
+            <button class="stage-close-btn" onclick="fecharModalBonusAtivo()">Entendido!</button>
+        </div>
+    `;
+    overlay.onclick = e => { if (e.target === overlay) fecharModalBonusAtivo(); };
     document.body.appendChild(overlay);
 }
+
 function fecharModalBonusAtivo() {
     const overlay = document.getElementById('stage-bonus-modal-overlay');
     if (overlay) overlay.remove();
@@ -632,7 +636,7 @@ async function buscarVendasAprovadasDaNuvem() {
                 instalacaoStatus: v.Instalação || 'Aguardando',
                 dataCriacao: v.DataCriacao || '',
                 observacao: v.Observacao || '',
-                ativadoPor: v['AtivadoPor'] || '',
+                ativadoPor: v['Ativado Por'] || '',
                 createdAt: v.CreatedAt ? parseInt(v.CreatedAt) : (v['Data Aprovação'] ? new Date(v['Data Aprovação']).getTime() : Date.now())
             }));
             const pendentesLocais = DB.ativacoes.filter(a => a.status !== 'Aprovado');
@@ -1456,6 +1460,7 @@ function carregarMetasAtivasVendedor() {
     if (!container) return;
     let html = '';
 
+    // Metas de vendas (pessoal)
     const realizadoMes = DB.ativacoes.filter(a => a.vendedor_id === sessao.id && a.status === 'Aprovado').length;
     const metaVendasMes = DB.metas.mensalVendas || 150;
     const pctVendas = Math.min((realizadoMes / metaVendasMes) * 100, 100).toFixed(1);
@@ -1465,6 +1470,7 @@ function carregarMetasAtivasVendedor() {
         <div class="progresso-bar-container" style="height:8px;margin-top:6px;"><div class="progresso-bar-liquido" style="width:${pctVendas}%;"></div></div>
     </div>`;
 
+    // Metas de produtos
     DB.metas.produtos.forEach(p => {
         const realizado = DB.ativacoes.filter(a => a.vendedor_id === sessao.id && a.produto === p.produto && a.status === 'Aprovado').length;
         const pctProd = Math.min((realizado / p.mensal) * 100, 100).toFixed(1);
@@ -1475,6 +1481,7 @@ function carregarMetasAtivasVendedor() {
         </div>`;
     });
 
+    // Metas de instalações
     DB.metas.instalacoes.filter(i => i.entidadeId === sessao.id || i.tipo === 'empresa').forEach(i => {
         const instaladas = DB.ativacoes.filter(a => a.vendedor_id === sessao.id && a.instalacaoStatus === 'Instalado').length;
         const pctInst = Math.min((instaladas / i.mensal) * 100, 100).toFixed(1);
