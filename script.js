@@ -24,7 +24,14 @@ if (!DB) {
             { id: 3, nome: "Cancelado", cor: "#ff4757" }
         ],
         ativacoes: [],
-        metas: { diariaVendas: 10, quinzenalVendas: 75, mensalVendas: 150, produtos: [], instalacoes: [] },
+        metas: { 
+            diariaVendas: 10, quinzenalVendas: 75, mensalVendas: 150, 
+            diariaEmpresa: 10, quinzenalEmpresa: 75, mensalEmpresa: 150, 
+            produtos: [], 
+            instalacoes: [],
+            produtosEmpresa: [],
+            instalacoesEmpresa: []
+        },
         promocoes: [],
         notificacoes: [],
         chatMessages: [],
@@ -43,6 +50,8 @@ DB.ativacoes = DB.ativacoes || [];
 DB.metas = DB.metas || { diariaVendas: 10, quinzenalVendas: 75, mensalVendas: 150, produtos: [], instalacoes: [] };
 DB.metas.produtos = DB.metas.produtos || [];
 DB.metas.instalacoes = DB.metas.instalacoes || [];
+DB.metas.produtosEmpresa = DB.metas.produtosEmpresa || [];
+DB.metas.instalacoesEmpresa = DB.metas.instalacoesEmpresa || [];
 DB.chatMessages = DB.chatMessages || [];
 DB.produtos = DB.produtos || ["Básico", "Empresarial", "Premium", "Ultra"];
 DB.opcoesVenda = DB.opcoesVenda || { velocidades: [], formasPagamento: [], valores: [] };
@@ -239,8 +248,9 @@ function ensureStageBadgeStyles() {
     style.id = 'stage-badge-styles';
     style.textContent = `
         @keyframes stage-fire-glow {
-            0% { box-shadow: 0 0 12px rgba(255,90,0,0.9), inset 0 0 8px rgba(255,150,0,0.6); transform: rotate(-8deg) scale(1); }
-            100% { box-shadow: 0 0 25px rgba(255,60,0,1), inset 0 0 15px rgba(255,200,0,0.8); transform: rotate(-6deg) scale(1.07); }
+            0% { box-shadow: 0 0 10px #ff4500, 0 0 20px #ff8c00, 0 0 30px #ff4500; transform: rotate(-8deg) scale(1); }
+            50% { box-shadow: 0 0 20px #ff6347, 0 0 40px #ff4500, 0 0 60px #ff6347; transform: rotate(-5deg) scale(1.08); }
+            100% { box-shadow: 0 0 10px #ff4500, 0 0 20px #ff8c00, 0 0 30px #ff4500; transform: rotate(-8deg) scale(1); }
         }
         .stage-new-badge {
             display: inline-flex;
@@ -250,47 +260,50 @@ function ensureStageBadgeStyles() {
             height: 24px;
             padding: 0 10px;
             border-radius: 999px;
-            background: linear-gradient(135deg,#ff9f00,#ff416c);
+            background: linear-gradient(135deg,#ff8c00,#ff4500);
             color: #fff;
-            font-weight: 700;
+            font-weight: 800;
             font-size: 11px;
             text-transform: uppercase;
             transform: rotate(-8deg);
-            text-shadow: 0 0 8px #ff4500, 0 0 20px #ff6600;
-            animation: stage-fire-glow 0.8s ease-in-out infinite alternate;
+            text-shadow: 0 0 10px #fff, 0 0 20px #ff4500;
+            animation: stage-fire-glow 1.2s ease-in-out infinite;
         }
         @keyframes stage-bonus-pulse {
-            0%,100%{transform:scale(1);box-shadow:0 0 18px rgba(255,80,16,0.6);}
-            50%{transform:scale(1.08);box-shadow:0 0 28px rgba(255,80,16,0.95);}
+            0%,100%{transform:scale(1);box-shadow:0 0 20px rgba(255,100,0,0.7);}
+            50%{transform:scale(1.1);box-shadow:0 0 35px rgba(255,80,0,1);}
         }
         .stage-bonus-widget {
-            position:fixed; bottom:22px; right:22px; width:76px; height:76px; border-radius:50%;
-            background: radial-gradient(circle at top,left,#ffcf66 0%,#ff5c3d 55%,#ff2d1f 100%);
+            position:fixed; bottom:22px; right:22px; width:80px; height:80px; border-radius:50%;
+            background: radial-gradient(circle at top left,#ffd700,#ff4500);
             color:#fff; display:flex; align-items:center; justify-content:center; text-align:center;
-            line-height:1.1; font-size:11px; font-weight:800;
-            box-shadow:0 0 30px rgba(255,90,10,0.85); cursor:pointer; z-index:9999;
-            animation: stage-bonus-pulse 1.6s ease-in-out infinite;
+            line-height:1.2; font-size:11px; font-weight:900;
+            box-shadow:0 0 35px rgba(255,100,0,0.9); cursor:pointer; z-index:9999;
+            animation: stage-bonus-pulse 1.4s ease-in-out infinite;
         }
-        .stage-bonus-widget:hover { transform:scale(1.05); }
+        .stage-bonus-widget:hover { transform:scale(1.12); }
         .stage-bonus-modal-overlay {
-            position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.75);
+            position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8);
             display:flex; align-items:center; justify-content:center; z-index:10000;
         }
         .stage-bonus-modal {
-            width: min(540px, calc(100vw - 40px)); max-width:540px; border-radius:40px;
-            background:linear-gradient(145deg,#1d1f27,#0d0f14); padding:30px;
-            box-shadow:0 0 60px rgba(0,0,0,0.55); color:#fff; text-align:center; position:relative;
+            width: min(500px, calc(100vw - 30px)); border-radius:32px;
+            background:linear-gradient(145deg,#1a1f2b,#0d0f14); padding:25px 20px;
+            box-shadow:0 0 60px rgba(255,100,0,0.5); color:#fff; text-align:center; position:relative;
+            border: 1px solid rgba(255,140,0,0.3);
         }
-        .stage-bonus-modal h2 { margin:0 0 12px; font-size:28px; }
-        .stage-bonus-modal p { margin:10px 0; font-size:15px; color:#ddd; }
+        .stage-bonus-modal h2 { margin:0 0 10px; font-size:26px; color:#ffd700; }
+        .stage-bonus-modal p { margin:8px 0; font-size:14px; color:#ddd; }
         .stage-bonus-modal .stage-prize {
-            margin:18px auto 0; padding:18px 24px; border-radius:28px;
-            background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12);
-            font-size:15px; color:#ffd166; font-weight:800; text-align:left;
+            margin:15px auto; padding:15px; border-radius:20px;
+            background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);
+            font-size:14px; color:#ffd700; font-weight:700; text-align:left;
         }
+        .stage-bonus-modal .stage-prize strong { color:#fff; }
         .stage-bonus-modal .stage-close-btn {
-            margin-top:24px; padding:12px 22px; border:none; border-radius:999px;
-            background:#ff5c48; color:#fff; font-weight:700; cursor:pointer;
+            margin-top:18px; padding:10px 20px; border:none; border-radius:30px;
+            background:#ff5722; color:#fff; font-weight:700; cursor:pointer;
+            font-size:14px;
         }
     `;
     document.head.appendChild(style);
@@ -320,7 +333,7 @@ function renderBonusAtivoWidget() {
         widget.onclick = mostrarModalBonusAtivo;
         document.body.appendChild(widget);
     }
-    widget.innerHTML = '🔥<br>Bonus<br>Ativo';
+    widget.innerHTML = '🔥<br>BÔNUS<br>ATIVO';
 }
 
 function mostrarModalBonusAtivo() {
@@ -335,16 +348,16 @@ function mostrarModalBonusAtivo() {
     overlay.innerHTML = `
         <div class="stage-bonus-modal">
             <h2>🔥 Bônus Ativo!</h2>
-            <p>Temos ${ativa.length} promoção${ativa.length > 1 ? 'ões' : ''} ativa${ativa.length > 1 ? 's' : ''}. Confira os detalhes:</p>
+            <p>Temos ${ativa.length} ${ativa.length === 1 ? 'promoção' : 'promoções'} ativa${ativa.length > 1 ? 's' : ''}. Confira os detalhes:</p>
             ${ativa.map(p => `
-                <div class="stage-prize" style="margin-bottom:12px;">
-                    <div style="font-size:14px; color:#fff;">📌 <strong>${p.tipo.toUpperCase()}</strong></div>
+                <div class="stage-prize" style="margin-bottom:10px;">
+                    <div style="font-size:14px;">📌 <strong>${p.tipo.toUpperCase()}</strong></div>
                     <div style="font-size:13px;">🎯 Meta: <strong>${p.quantidade}</strong></div>
                     <div style="font-size:13px;">📅 Período: <strong>${new Date(p.inicio).toLocaleDateString('pt-BR')} → ${new Date(p.fim).toLocaleDateString('pt-BR')}</strong></div>
-                    <div style="font-size:15px; color:#ffd166; font-weight:800;">🏆 Prêmio: ${p.premio}</div>
+                    <div style="font-size:15px; color:#ffd700; font-weight:800;">🏆 Prêmio: ${p.premio}</div>
                 </div>
             `).join('')}
-            <p style="margin-top:18px;color:#ffddb3;">Clique no botão abaixo para fechar e continuar vendendo com turbo!</p>
+            <p style="color:#ffddb3; font-size:13px;">Continue vendendo para garantir seu prêmio!</p>
             <button class="stage-close-btn" onclick="fecharModalBonusAtivo()">Entendido!</button>
         </div>
     `;
@@ -406,6 +419,7 @@ async function sincronizarUsuariosDaNuvem() {
     console.error('❌ Erro ao sincronizar usuários da nuvem:', e);
   }
 }
+
 async function sincronizarStatusFlagsDaNuvem() {
   try {
     const resp = await fetchFromGS('listarStatusFlags');
@@ -438,6 +452,9 @@ async function sincronizarMetasVendas() {
       DB.metas.diariaVendas = resp.metas.diariaVendas || 10;
       DB.metas.quinzenalVendas = resp.metas.quinzenalVendas || 75;
       DB.metas.mensalVendas = resp.metas.mensalVendas || 150;
+      DB.metas.diariaEmpresa = resp.metas.diariaEmpresa || DB.metas.diariaVendas;
+      DB.metas.quinzenalEmpresa = resp.metas.quinzenalEmpresa || DB.metas.quinzenalVendas;
+      DB.metas.mensalEmpresa = resp.metas.mensalEmpresa || DB.metas.mensalVendas;
       salvarDB();
     }
   } catch (e) { console.warn('Erro ao sincronizar metas de vendas:', e); }
@@ -457,7 +474,8 @@ async function sincronizarMetasProdutos() {
   try {
     const resp = await fetchFromGS('listarMetasProdutos');
     if (resp && resp.metas) {
-      DB.metas.produtos = resp.metas.map(m => ({ id: m.id, produto: m.produto, diaria: m.diaria, quinzenal: m.quinzenal, mensal: m.mensal }));
+      DB.metas.produtos = resp.metas.filter(m => m.tipo === 'vendedor').map(m => ({ id: m.id, produto: m.produto, diaria: m.diaria, quinzenal: m.quinzenal, mensal: m.mensal }));
+      DB.metas.produtosEmpresa = resp.metas.filter(m => m.tipo === 'empresa').map(m => ({ id: m.id, produto: m.produto, diaria: m.diaria, quinzenal: m.quinzenal, mensal: m.mensal }));
       salvarDB();
     }
   } catch (e) { console.warn('Erro ao sincronizar metas de produtos:', e); }
@@ -479,7 +497,8 @@ async function sincronizarMetasInstalacoes() {
   try {
     const resp = await fetchFromGS('listarMetasInstalacoes');
     if (resp && resp.metas) {
-      DB.metas.instalacoes = resp.metas.map(m => ({ id: m.id, tipo: m.tipo, entidade: m.entidade, entidadeId: m.entidadeId, diaria: m.diaria, quinzenal: m.quinzenal, mensal: m.mensal }));
+      DB.metas.instalacoes = resp.metas.filter(m => m.tipo === 'vendedor').map(m => ({ id: m.id, tipo: m.tipo, entidade: m.entidade, entidadeId: m.entidadeId, diaria: m.diaria, quinzenal: m.quinzenal, mensal: m.mensal }));
+      DB.metas.instalacoesEmpresa = resp.metas.filter(m => m.tipo === 'empresa').map(m => ({ id: m.id, tipo: m.tipo, entidade: m.entidade, entidadeId: m.entidadeId, diaria: m.diaria, quinzenal: m.quinzenal, mensal: m.mensal }));
       salvarDB();
     }
   } catch (e) { console.warn('Erro ao sincronizar metas de instalações:', e); }
@@ -617,6 +636,7 @@ async function buscarVendasAprovadasDaNuvem() {
                 instalacaoStatus: v.Instalação || 'Aguardando',
                 dataCriacao: v.DataCriacao || '',
                 observacao: v.Observacao || '',
+                ativadoPor: v['Ativado Por'] || '',
                 createdAt: v.CreatedAt ? parseInt(v.CreatedAt) : (v['Data Aprovação'] ? new Date(v['Data Aprovação']).getTime() : Date.now())
             }));
             const pendentesLocais = DB.ativacoes.filter(a => a.status !== 'Aprovado');
@@ -878,7 +898,9 @@ async function fecharModalAtivacao() {
                     contrato: a.contrato,
                     infoData: a.infoData,
                     infoPeriodo: a.infoPeriodo,
-                    vendedorNome: a.vendedorNome
+                    vendedorNome: a.vendedorNome,
+                    vendedorId: a.vendedor_id,
+                    ativadoPor: a.ativadoPor || ''
                 };
                 const resp = await fetchFromGS('aprovarVenda', params);
                 if (resp && resp.ok === true) {
@@ -980,7 +1002,7 @@ function carregarVendasAprovadas(pagina = paginaAtualVendasAprovadas) {
             <td><span style="color:${instalacaoStatus === 'Instalado' ? '#2ed573' : instalacaoStatus === 'Cancelado' ? '#ff4757' : '#ffa502'};font-weight:600;">${instalacaoStatus}</span></td>
             <td>
                 <button onclick="abrirModalVisualizacao('${a.id}')" class="btn-glass-sm"><i class="fas fa-eye"></i></button>
-                <button onclick="removerVenda('${a.id}')" class="btn-glass-sm" style="background:rgba(255,71,87,0.2);border-color:#ff4757;color:#ff4757;"><i class="fas fa-trash"></i></button>
+                ${sessao.tipo === 'admin' ? `<button onclick="removerVenda('${a.id}')" class="btn-glass-sm" style="background:rgba(255,71,87,0.2);border-color:#ff4757;color:#ff4757;"><i class="fas fa-trash"></i></button>` : ''}
             </td>
         </tr>`;
     }).join('') : '<tr><td colspan="7" style="text-align:center;padding:30px;">Nenhuma venda aprovada</td></tr>';
@@ -1000,6 +1022,10 @@ function abrirModalVisualizacao(id) {
     const idStr = String(id);
     const a = DB.ativacoes.find(x => String(x.id) === idStr);
     if (!a) { alert('Venda não encontrada'); return; }
+    if (sessao.tipo !== 'admin' && a.vendedor_id !== sessao.id) {
+        alert('Você não tem permissão para visualizar esta venda.');
+        return;
+    }
     vendaSendoVisualizada = idStr;
     const flag = DB.statusFlags.find(f => f.nome === a.status) || { cor: '#fff' };
     const dataNascFormatada = a.dataNasc ? formatarBR(a.dataNasc) : '';
@@ -1070,14 +1096,19 @@ function abrirModalVisualizacao(id) {
         ['Observação', a.observacao || '', 'viewObservacao']
     ];
     campos.forEach(([label, valor, id]) => {
+        const readonlyAttr = (sessao.tipo !== 'admin') ? 'readonly' : '';
         if (label === 'Observação') {
-            html += `<div class="input-group" style="grid-column:span 2;"><label>${label}</label><textarea id="${id}" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);min-height:80px;">${valor || ''}</textarea></div>`;
+            html += `<div class="input-group" style="grid-column:span 2;"><label>${label}</label><textarea id="${id}" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);min-height:80px;" ${readonlyAttr}>${valor || ''}</textarea></div>`;
         } else {
-            html += `<div class="input-group"><label>${label}</label><input id="${id}" value="${valor || ''}" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);"></div>`;
+            html += `<div class="input-group"><label>${label}</label><input id="${id}" value="${valor || ''}" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);" ${readonlyAttr}></div>`;
         }
     });
     html += `</div>`;
-    html += `<div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;"><button onclick="fecharModalVisualizacao()" class="btn-glass-sm" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);">Fechar</button><button onclick="salvarEdicaoVenda()" class="btn-glass-sm" style="background:#2ed573;color:#0b0b0b;">Salvar alterações</button></div>`;
+    html += `<div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;"><button onclick="fecharModalVisualizacao()" class="btn-glass-sm" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);">Fechar</button>`;
+    if (sessao.tipo === 'admin') {
+        html += `<button onclick="salvarEdicaoVenda()" class="btn-glass-sm" style="background:#2ed573;color:#0b0b0b;">Salvar alterações</button>`;
+    }
+    html += `</div>`;
     document.getElementById('conteudoModalVisualizacao').innerHTML = html;
     document.getElementById('modalVisualizacao').style.display = 'flex';
 }
@@ -1085,6 +1116,7 @@ function abrirModalVisualizacao(id) {
 function fecharModalVisualizacao() { document.getElementById('modalVisualizacao').style.display = 'none'; }
 
 async function salvarEdicaoVenda() {
+    if (sessao.tipo !== 'admin') return;
     const idStr = String(vendaSendoVisualizada);
     const a = DB.ativacoes.find(x => String(x.id) === idStr);
     if (!a) {
@@ -1163,26 +1195,24 @@ async function salvarEdicaoVenda() {
     try {
         const resp = await fetchFromGS('editarVenda', params);
         if (resp && resp.ok === true) {
-            alert('✅ Dados da venda atualizados e sincronizados com a planilha!');
+            alert('✅ Dados da venda atualizados e sincronizados!');
         } else {
-            alert('⚠️ Alterações salvas localmente, mas houve falha ao sincronizar com a planilha.');
-            console.warn('editarVenda retorno:', resp);
+            alert('⚠️ Alterações salvas localmente, mas houve falha ao sincronizar.');
         }
     } catch (e) {
-        alert('⚠️ Alterações salvas localmente, mas falha de comunicação com a planilha.');
-        console.warn('Erro editarVenda:', e);
+        alert('⚠️ Alterações salvas localmente, mas falha de comunicação.');
     }
     carregarVendasAprovadas();
     if (sessao?.tipo === 'admin') carregarDashboard();
-    if (sessao?.tipo === 'vendedor') {
-        carregarControleVendas();
-        carregarInstalacoes();
-    }
     document.getElementById('modalVisualizacao').style.display = 'none';
 }
 
 // ===== REMOVER VENDA =====
 async function removerVenda(id) {
+    if (sessao.tipo !== 'admin') {
+        alert('Apenas administradores podem remover vendas.');
+        return;
+    }
     const venda = DB.ativacoes.find(a => a.id === id);
     if (!venda) {
         alert('Venda não encontrada!');
@@ -1316,6 +1346,7 @@ function carregarControleVendas() {
         </tr>`;
     }).join('') : '<tr><td colspan="7" style="text-align:center;padding:30px;">Nenhuma venda aprovada</td></tr>';
 }
+
 function carregarInstalacoes() {
     const aprovadas = DB.ativacoes
         .filter(a => a.vendedor_id === sessao.id && a.status === 'Aprovado')
@@ -1344,8 +1375,8 @@ function carregarInstalacoes() {
 async function alterarStatusInstalacao(id, novoStatus) {
     const a = DB.ativacoes.find(x => x.id === id);
     if (!a) return;
-    if (novoStatus === 'Instalado') {
-        if (!confirm(`⚠️ Essa venda de "${a.nomeCompleto}" foi realmente INSTALADA?`)) {
+    if (novoStatus === 'Instalado' && sessao.tipo !== 'admin') {
+        if (!confirm(`⚠️ Confirmar instalação de "${a.nomeCompleto}"?`)) {
             const select = document.querySelector(`select[onchange*="alterarStatusInstalacao('${id}"]`);
             if (select) select.value = a.instalacaoStatus || 'Aguardando';
             return;
@@ -1403,10 +1434,10 @@ function mostrarSecaoVendedor(e, secao) {
 
 function carregarInicioVendedor() {
     if (!sessao) return;
-    const metaMensal = DB.metas.mensalVendas || 150;
-    const metaDiaria = DB.metas.diariaVendas || 10;
-    document.getElementById('metaMensalVendedor').textContent = metaMensal;
-    document.getElementById('metaDiariaVendedor').textContent = metaDiaria;
+    const metaMensalVendedor = DB.metas.mensalVendas || 150;
+    const metaDiariaVendedor = DB.metas.diariaVendas || 10;
+    document.getElementById('metaMensalVendedor').textContent = metaMensalVendedor;
+    document.getElementById('metaDiariaVendedor').textContent = metaDiariaVendedor;
 
     const vendasAprovadas = DB.ativacoes.filter(a =>
         a.vendedor_id === sessao.id &&
@@ -1414,10 +1445,10 @@ function carregarInicioVendedor() {
         a.finalizada !== false
     );
     const totalVendas = vendasAprovadas.length;
-    const percentual = Math.min((totalVendas / metaMensal) * 100, 100).toFixed(1);
+    const percentual = Math.min((totalVendas / metaMensalVendedor) * 100, 100).toFixed(1);
 
     document.getElementById('realizadoVendedorMes').textContent = totalVendas;
-    document.getElementById('faltamVendedorMes').textContent = Math.max(metaMensal - totalVendas, 0);
+    document.getElementById('faltamVendedorMes').textContent = Math.max(metaMensalVendedor - totalVendas, 0);
     document.getElementById('totalVendasMesVendedor').textContent = totalVendas;
     document.getElementById('barraProgressoVendedor').style.width = `${percentual}%`;
     atualizarPainelInstalacoes();
@@ -1429,25 +1460,36 @@ function carregarMetasAtivasVendedor() {
     if (!container) return;
     let html = '';
 
-    // Meta de vendas
-    if (DB.metas.diariaVendas) {
-        html += `<div class="meta-vendedor-card"><span class="meta-vendedor-label">🎯 Meta Diária</span><span class="meta-vendedor-value">${DB.metas.diariaVendas}</span><span class="meta-vendedor-note">vendas</span></div>`;
-    }
-    if (DB.metas.quinzenalVendas) {
-        html += `<div class="meta-vendedor-card"><span class="meta-vendedor-label">📅 Meta Quinzenal</span><span class="meta-vendedor-value">${DB.metas.quinzenalVendas}</span><span class="meta-vendedor-note">vendas</span></div>`;
-    }
-    if (DB.metas.mensalVendas) {
-        html += `<div class="meta-vendedor-card"><span class="meta-vendedor-label">📆 Meta Mensal</span><span class="meta-vendedor-value">${DB.metas.mensalVendas}</span><span class="meta-vendedor-note">vendas</span></div>`;
-    }
+    // Metas de vendas (pessoal)
+    const realizadoMes = DB.ativacoes.filter(a => a.vendedor_id === sessao.id && a.status === 'Aprovado').length;
+    const metaVendasMes = DB.metas.mensalVendas || 150;
+    const pctVendas = Math.min((realizadoMes / metaVendasMes) * 100, 100).toFixed(1);
+    html += `<div class="meta-vendedor-card">
+        <span class="meta-vendedor-label">🎯 Minha Meta Mensal</span>
+        <span class="meta-vendedor-value">${realizadoMes}/${metaVendasMes}</span>
+        <div class="progresso-bar-container" style="height:8px;margin-top:6px;"><div class="progresso-bar-liquido" style="width:${pctVendas}%;"></div></div>
+    </div>`;
 
-    // Metas de produtos associadas ao vendedor (se houver)
+    // Metas de produtos
     DB.metas.produtos.forEach(p => {
-        html += `<div class="meta-vendedor-card"><span class="meta-vendedor-label">📦 ${p.produto} (Mensal)</span><span class="meta-vendedor-value">${p.mensal}</span><span class="meta-vendedor-note">unidades</span></div>`;
+        const realizado = DB.ativacoes.filter(a => a.vendedor_id === sessao.id && a.produto === p.produto && a.status === 'Aprovado').length;
+        const pctProd = Math.min((realizado / p.mensal) * 100, 100).toFixed(1);
+        html += `<div class="meta-vendedor-card">
+            <span class="meta-vendedor-label">📦 ${p.produto}</span>
+            <span class="meta-vendedor-value">${realizado}/${p.mensal}</span>
+            <div class="progresso-bar-container" style="height:8px;margin-top:6px;"><div class="progresso-bar-liquido" style="width:${pctProd}%;"></div></div>
+        </div>`;
     });
 
-    // Metas de instalações associadas ao vendedor
-    DB.metas.instalacoes.filter(i => i.tipo === 'vendedor' && i.entidadeId === sessao.id).forEach(i => {
-        html += `<div class="meta-vendedor-card"><span class="meta-vendedor-label">🔧 Instalações (Mensal)</span><span class="meta-vendedor-value">${i.mensal}</span><span class="meta-vendedor-note">instalações</span></div>`;
+    // Metas de instalações
+    DB.metas.instalacoes.filter(i => i.entidadeId === sessao.id || i.tipo === 'empresa').forEach(i => {
+        const instaladas = DB.ativacoes.filter(a => a.vendedor_id === sessao.id && a.instalacaoStatus === 'Instalado').length;
+        const pctInst = Math.min((instaladas / i.mensal) * 100, 100).toFixed(1);
+        html += `<div class="meta-vendedor-card">
+            <span class="meta-vendedor-label">🔧 Instalações</span>
+            <span class="meta-vendedor-value">${instaladas}/${i.mensal}</span>
+            <div class="progresso-bar-container" style="height:8px;margin-top:6px;"><div class="progresso-bar-liquido" style="width:${pctInst}%;"></div></div>
+        </div>`;
     });
 
     container.innerHTML = html || '<div class="meta-vendedor-card"><span class="meta-vendedor-label">Nenhuma meta definida</span></div>';
@@ -1515,7 +1557,7 @@ async function carregarDashboard() {
     await Promise.all([buscarPendentesDaNuvem(), buscarVendasAprovadasDaNuvem()]);
     const vendasMes = obterVendasAprovadasMesAtual();
     const realizado = vendasMes.length;
-    const metaMensal = DB.metas.mensalVendas || 150;
+    const metaMensal = DB.metas.mensalEmpresa || DB.metas.mensalVendas || 150;
     const percentual = Math.min((realizado / metaMensal) * 100, 100).toFixed(1);
     document.getElementById('metaMensalCard').textContent = metaMensal;
     document.getElementById('realizadoMeta').textContent = realizado;
@@ -1530,7 +1572,7 @@ function carregarVendasDiarias() {
     const hoje = new Date();
     document.getElementById('dataVendasDiarias').textContent = hoje.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
     const vendasHoje = gerarDadosVendas();
-    const meta = DB.metas.diariaVendas || 10;
+    const meta = DB.metas.diariaEmpresa || DB.metas.diariaVendas || 10;
     document.getElementById('totalVendasHoje').textContent = vendasHoje.length;
     const pctDiario = Math.min((vendasHoje.length / meta) * 100, 100).toFixed(1);
     document.getElementById('barraLiquidaDiaria').style.width = `${pctDiario}%`;
@@ -1595,7 +1637,7 @@ function carregarComparativoMensal() {
     const melhor = Object.values(ranking).sort((a,b) => b.vendas - a.vendas)[0];
     document.getElementById('destaqueMensal').innerHTML = melhor ? `<div class="destaque-card"><div class="destaque-icon">🏆</div><div><div class="destaque-nome">${melhor.nome}</div><div class="destaque-info">${melhor.vendas} vendas no mês</div></div></div>` : '<p style="color:rgba(255,255,255,0.4);">Nenhum vendedor</p>';
     carregarComparacaoProdutos(vAtual, vAnterior, 'compProdutosMensal');
-    const meta = DB.metas.mensalVendas || 150, realizado = vAtual.length, pct = Math.min((realizado / meta) * 100, 100).toFixed(1);
+    const meta = DB.metas.mensalEmpresa || DB.metas.mensalVendas || 150, realizado = vAtual.length, pct = Math.min((realizado / meta) * 100, 100).toFixed(1);
     document.getElementById('metaMensalValor').textContent = meta;
     document.getElementById('metaMensalRealizado').textContent = realizado;
     document.getElementById('metaMensalPct').textContent = `${pct}%`;
@@ -1604,7 +1646,7 @@ function carregarComparativoMensal() {
 
 function carregarComparacaoProdutos(vAtual, vPassado, containerId) {
     const container = document.getElementById(containerId);
-    const planos = ['Básico', 'Empresarial', 'Premium', 'Ultra'];
+    const planos = DB.produtos.length ? DB.produtos : ['Básico', 'Empresarial', 'Premium', 'Ultra'];
     const maxVendas = Math.max(...planos.map(p => Math.max(vAtual.filter(v => v.plano === p).length, vPassado.filter(v => v.plano === p).length, 1)), 1);
     container.innerHTML = planos.map(p => {
         const qAtual = vAtual.filter(v => v.plano === p).length, qPassado = vPassado.filter(v => v.plano === p).length;
@@ -1923,7 +1965,7 @@ function gerarVendasQuinzenaAnterior() {
 }
 
 function carregarComparativoProdutos(atual, anterior, periodo) {
-    const produtos = ['Básico', 'Empresarial', 'Premium', 'Ultra'];
+    const produtos = DB.produtos.length ? DB.produtos : ['Básico', 'Empresarial', 'Premium', 'Ultra'];
     let html = '<table><thead><tr><th>Produto</th><th>Período Atual</th><th>Período Anterior</th><th>Variação</th></tr></thead><tbody>';
     produtos.forEach(p => {
         const qtdAtual = atual.filter(v => v.plano === p).length;
@@ -1992,7 +2034,7 @@ function gerarPDF() {
     else if (periodo === 'quinzena') { dadosAtual = gerarVendasQuinzenaAtual(); dadosAnterior = gerarVendasQuinzenaAnterior(); }
     else { dadosAtual = gerarVendasMesAtual(); dadosAnterior = gerarVendasMesAnterior(); }
     let html = `<div style="font-family:Arial,sans-serif;padding:15px;color:#000;background:#fff;max-width:700px;margin:0 auto;"><h1 style="font-size:18px;color:#000;margin-bottom:10px;">📊 Relatório de Vendas - STAGE TELECOM</h1><p style="font-size:12px;color:#333;margin-bottom:20px;">Período: ${periodo} | Gerado em: ${new Date().toLocaleDateString('pt-BR')}</p><h2 style="font-size:14px;color:#000;border-bottom:2px solid #e74c3c;padding-bottom:5px;">Comparativo de Produtos</h2><table style="width:100%;border-collapse:collapse;font-size:11px;color:#000;margin-bottom:20px;"><tr style="background:#f5f5f5;"><th style="padding:8px;">Produto</th><th>Atual</th><th>Anterior</th><th>Variação</th></tr>`;
-    const produtos = ['Básico','Empresarial','Premium','Ultra'];
+    const produtos = DB.produtos.length ? DB.produtos : ['Básico','Empresarial','Premium','Ultra'];
     produtos.forEach(p => {
         const qAt = dadosAtual.filter(v => v.plano === p).length;
         const qAnt = dadosAnterior.filter(v => v.plano === p).length;
@@ -2041,6 +2083,9 @@ function carregarMetas() {
     document.getElementById('metaDiariaVendas').value = DB.metas.diariaVendas || 10;
     document.getElementById('metaQuinzenalVendas').value = DB.metas.quinzenalVendas || 75;
     document.getElementById('metaMensalVendas').value = DB.metas.mensalVendas || 150;
+    document.getElementById('metaDiariaEmpresa')?.value = DB.metas.diariaEmpresa || DB.metas.diariaVendas;
+    document.getElementById('metaQuinzenalEmpresa')?.value = DB.metas.quinzenalEmpresa || DB.metas.quinzenalVendas;
+    document.getElementById('metaMensalEmpresa')?.value = DB.metas.mensalEmpresa || DB.metas.mensalVendas;
     carregarSelectProdutos();
     const tabelaProd = document.getElementById('tabelaMetasProdutos');
     tabelaProd.innerHTML = DB.metas.produtos.map(p => `<tr>
@@ -2126,11 +2171,17 @@ function salvarMetas() {
     const diaria = parseInt(document.getElementById('metaDiariaVendas').value) || 10;
     const quinzenal = parseInt(document.getElementById('metaQuinzenalVendas').value) || 75;
     const mensal = parseInt(document.getElementById('metaMensalVendas').value) || 150;
+    const diariaEmp = parseInt(document.getElementById('metaDiariaEmpresa')?.value) || diaria;
+    const quinzenalEmp = parseInt(document.getElementById('metaQuinzenalEmpresa')?.value) || quinzenal;
+    const mensalEmp = parseInt(document.getElementById('metaMensalEmpresa')?.value) || mensal;
     DB.metas.diariaVendas = diaria;
     DB.metas.quinzenalVendas = quinzenal;
     DB.metas.mensalVendas = mensal;
+    DB.metas.diariaEmpresa = diariaEmp;
+    DB.metas.quinzenalEmpresa = quinzenalEmp;
+    DB.metas.mensalEmpresa = mensalEmp;
     salvarDB();
-    fetchFromGS('salvarMetasVendas', { diaria, quinzenal, mensal }).then(resp => {
+    fetchFromGS('salvarMetasVendas', { diaria, quinzenal, mensal, diariaEmp, quinzenalEmp, mensalEmp }).then(resp => {
         if (resp && resp.ok) console.log('✅ Metas de vendas salvas na nuvem');
     }).catch(e => console.warn('Erro ao salvar metas de vendas', e));
     alert('✅ Metas de vendas atualizadas!');
@@ -2760,7 +2811,6 @@ function mostrarAdmin() {
     document.getElementById('userInfoAdmin').innerHTML = `<div style="font-weight:700;font-size:15px;">${sessao.nome}</div><div style="font-size:11px;color:var(--primary-light);margin-top:3px;">👑 Administrador</div><div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:3px;">${sessao.email}</div>`;
     carregarDashboard();
     verificarPromocoesAdmin();
-    //iniciarChat();
     buscarPendentesDaNuvem();
     buscarVendasAprovadasDaNuvem();
     sincronizarUsuariosDaNuvem();
@@ -2780,7 +2830,6 @@ function mostrarVendedor() {
     document.getElementById('userInfoVendedor').innerHTML = `<div style="font-weight:700;font-size:15px;">${sessao.nome}</div><div style="font-size:11px;color:var(--primary-light);margin-top:3px;">💼 Vendedor</div><div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:3px;">${sessao.email}</div>`;
     mostrarSecaoVendedor(null, 'inicio');
     verificarNotificacoesVendedor();
-    //iniciarChat();
 
     Promise.all([buscarPendentesDaNuvem(), buscarVendasAprovadasDaNuvem()]).then(() => {
         if (document.getElementById('secao-inicio')?.classList.contains('section-active')) {
