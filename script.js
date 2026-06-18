@@ -92,7 +92,7 @@ function dataParaBR(d) {
 }
 
 // ===== CONFIGURAÇÕES =====
-const GOOGLE_SHEET_VENDAS_URL = 'https://script.google.com/macros/s/AKfycbwwEw7OpNnODYRZS3jSejCze-snDswqrJd-KrABdElzXq1kDRMplXgbEjee4YZJCqS9/exec';
+const GOOGLE_SHEET_VENDAS_URL = 'https://script.google.com/macros/s/AKfycbwQPS5jE2xAADpStdVTTx4Zc3-5xPquzD9udle0pdBNiSUUX1rn6Oyfx71rQWGb4fF7/exec';
 
 let sessao = JSON.parse(sessionStorage.getItem('stage_session'));
 let comparativoAtual = 'diario';
@@ -1061,8 +1061,16 @@ function limparFormularioVenda() {
     ids.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
 }
 
+let enviandoVenda = false;
+
 function enviarVenda() {
+    if (enviandoVenda) {
+        alert('⏳ Aguarde, sua venda está sendo enviada...');
+        return;
+    }
+    
     if (!sessao) { alert('Sessão expirada.'); return; }
+    
     const getVal = function(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
     const campos = {
         viabilidade: getVal('vViabilidade'), planoTipo: getVal('vPlanoTipo'), tipoAprovacao: getVal('vTipoAprovacao'),
@@ -1081,10 +1089,30 @@ function enviarVenda() {
     if (campos.dataNasc) { const d = parseDateBR(campos.dataNasc); campos.dataNasc = d ? dataParaBR(d) : campos.dataNasc; }
     if (campos.dataExpedicao) { const d = parseDateBR(campos.dataExpedicao); campos.dataExpedicao = d ? dataParaBR(d) : campos.dataExpedicao; }
     const nova = { ...campos, vendedor_id: sessao.id, vendedorNome: sessao.nome, status: "Pendente", data: hojeBR(), finalizada: false, createdAt: Date.now(), newBadge: true };
+    
+    enviandoVenda = true;
+    const btn = document.querySelector('#secao-enviarVenda .btn-glass-primary');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+    }
+    
     fetchFromGS('adicionarPendente', { venda: JSON.stringify(nova) }).then(resp => {
-        if (resp && resp.ok) { alert('✅ Venda enviada!'); limparFormularioVenda(); DB.ativacoes.unshift({ ...nova, id: resp.id }); salvarDB(); }
+        if (resp && resp.ok) { 
+            alert('✅ Venda enviada!'); 
+            limparFormularioVenda(); 
+            DB.ativacoes.unshift({ ...nova, id: resp.id }); 
+            salvarDB(); 
+        }
         else alert('❌ Erro ao enviar.');
-    }).catch(err => { alert('❌ Erro de comunicação.'); });
+    }).catch(err => { alert('❌ Erro de comunicação.'); })
+    .finally(() => {
+        enviandoVenda = false;
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-check"></i> Enviar Venda';
+        }
+    });
 }
 
 function carregarControleVendas() {
@@ -1486,10 +1514,90 @@ function carregarSelectProdutos(){
     const s=document.getElementById('produtoMetaSelect'); if(s)s.innerHTML=DB.produtos.map(p=>'<option value="'+p+'">'+p+'</option>').join('');
     const sv=document.getElementById('vPlano'); if(sv)sv.innerHTML='<option value="">Selecione o plano</option>'+DB.produtos.map(p=>'<option value="'+p+'">'+p+'</option>').join('');
 }
-function adicionarMetaProduto(){/* mantida */}
-function removerMetaProduto(id){/* mantida */}
-function adicionarMetaInstalacao(){/* mantida */}
-function removerMetaInstalacao(id){/* mantida */}
+function adicionarMetaProduto(){
+    const produto = document.getElementById('produtoMetaSelect').value;
+    const tipo = document.getElementById('tipoMetaProduto').value;
+    const diaria = parseInt(document.getElementById('produtoDiaria').value) || 0;
+    const quinzenal = parseInt(document.getElementById('produtoQuinzenal').value) || 0;
+    const mensal = parseInt(document.getElementById('produtoMensal').value) || 0;
+    if (!produto || diaria <= 0 || quinzenal <= 0 || mensal <= 0) return alert('Preencha todos os campos corretamente!');
+    fetchFromGS('adicionarMetaProduto', { produto, tipo, diaria, quinzenal, mensal }).then(resp => {
+        if (resp && resp.ok) {
+            DB.metas.produtos.push({ id: resp.id, produto, diaria, quinzenal, mensal });
+            salvarDB();
+            carregarMetas();
+            alert('✅ Meta de produto adicionada!');
+        } else alert('Erro ao adicionar meta de produto.');
+    }).catch(e => alert('Erro de comunicação.'));
+}
+function removerMetaProduto(id){
+    if (!confirm('Remover esta meta?')) return;
+    fetchFromGS('removerMetaProduto', { id }).then(resp => {
+        if (resp && resp.ok) {
+            DB.metas.produtos = DB.metas.produtos.filter(p => p.id !== id);
+            salvarDB();
+            carregarMetas();
+        } else alert('Erro ao remover meta.');
+    }).catch(e => alert('Erro de comunicação.'));
+}
+function adicionarMetaInstalacao(){
+    const tipo = document.getElementById('tipoMetaInstalacao').value;
+    const diaria = parseInt(document.getElementById('instalacaoDiaria').value) || 0;
+    const quinzenal = parseInt(document.getElementById('instalacaoQuinzenal').value) || 0;
+    const mensal = parseInt(document.getElementById('instalacaoMensal').value) || 0;
+    
+    if (diaria <= 0 || quinzenal <= 0 || mensal <= 0) return alert('Valores inválidos! Preencha todos os campos.');
+    
+    let entidade = '', entidadeId = null;
+    if (tipo === 'vendedor') {
+        const selVend = document.getElementById('vendedorMetaInstalacao');
+        entidadeId = parseInt(selVend.value);
+        const vend = DB.usuarios.find(u => u.id === entidadeId);
+        entidade = vend ? vend.nome : 'Vendedor';
+    } else { 
+        entidade = 'STAGE TELECOM'; 
+        entidadeId = 0; 
+    }
+    
+    fetchFromGS('adicionarMetaInstalacao', { 
+        tipo: tipo, 
+        entidade: entidade, 
+        entidadeId: entidadeId, 
+        diaria: diaria, 
+        quinzenal: quinzenal, 
+        mensal: mensal 
+    }).then(resp => {
+        if (resp && resp.ok) {
+            DB.metas.instalacoes.push({ 
+                id: resp.id, 
+                tipo: tipo, 
+                entidade: entidade, 
+                entidadeId: entidadeId, 
+                diaria: diaria, 
+                quinzenal: quinzenal, 
+                mensal: mensal 
+            });
+            salvarDB();
+            carregarMetas();
+            alert('✅ Meta de instalação adicionada!');
+        } else {
+            alert('Erro ao adicionar meta.');
+        }
+    }).catch(e => {
+        console.error(e);
+        alert('Erro de comunicação.');
+    });
+}
+function removerMetaInstalacao(id){
+    if (!confirm('Remover esta meta?')) return;
+    fetchFromGS('removerMetaInstalacao', { id }).then(resp => {
+        if (resp && resp.ok) {
+            DB.metas.instalacoes = DB.metas.instalacoes.filter(i => i.id !== id);
+            salvarDB();
+            carregarMetas();
+        } else alert('Erro ao remover meta.');
+    }).catch(e => alert('Erro de comunicação.'));
+}
 
 function salvarMetas(){
     const diaria=parseInt(document.getElementById('metaDiariaVendas').value)||10;
@@ -1507,7 +1615,20 @@ function salvarMetas(){
 }
 
 function carregarTabelaProdutos(){const t=document.getElementById('tabelaProdutos');if(!t)return;t.innerHTML=DB.produtos.map((p,i)=>'<tr><td>'+p+'</td><td><button onclick="editarProduto('+i+')" class="btn-glass-sm" style="margin-right:5px;"><i class="fas fa-edit"></i></button><button onclick="excluirProduto('+i+')" class="btn-glass-sm" style="background:rgba(255,71,87,0.2);border-color:#ff4757;color:#ff4757;"><i class="fas fa-trash"></i></button></td></tr>').join('');}
-function adicionarProduto(){/* mantida */}
+function adicionarProduto(){
+    const nome = document.getElementById('novoProdutoNome').value.trim();
+    if (!nome) return alert('Digite um nome para o produto.');
+    if (DB.produtos.includes(nome)) return alert('Produto já existe.');
+    fetchFromGS('adicionarProduto', { nome }).then(resp => {
+        if (resp && resp.ok) {
+            DB.produtos.push(nome);
+            salvarDB();
+            document.getElementById('novoProdutoNome').value = '';
+            carregarTabelaProdutos();
+            carregarSelectProdutos();
+        } else alert('Erro ao adicionar produto na nuvem: ' + (resp ? resp.erro : ''));
+    }).catch(e => { console.warn(e); alert('Erro de comunicação.'); });
+}
 async function excluirProduto(index){/* mantida */}
 function editarProduto(index){/* mantida */}
 
@@ -1532,7 +1653,17 @@ function carregarOpcoesVenda(){
     const sf=document.getElementById('vFormaPagamento'); if(sf)sf.innerHTML='<option value="">Selecione</option>'+(DB.opcoesVenda.formasPagamento||[]).map(v=>'<option value="'+v+'">'+v+'</option>').join('');
     const sval=document.getElementById('vValor'); if(sval)sval.innerHTML='<option value="">Selecione</option>'+(DB.opcoesVenda.valores||[]).map(v=>'<option value="'+v+'">R$ '+v+'</option>').join('');
 }
-function carregarMetasInstalacoes(){/* mantida */}
+function carregarMetasInstalacoes(){
+    const tabelaInst = document.getElementById('tabelaMetasInstalacoes');
+    tabelaInst.innerHTML = DB.metas.instalacoes.map(i => '<tr>' +
+        '<td>' + (i.tipo === 'vendedor' ? 'Vendedor' : 'Empresa') + '</td>' +
+        '<td>' + i.entidade + '</td>' +
+        '<td>' + i.diaria + '</td>' +
+        '<td>' + i.quinzenal + '</td>' +
+        '<td>' + i.mensal + '</td>' +
+        '<td><button onclick="removerMetaInstalacao(' + i.id + ')" class="btn-glass-danger" style="padding:4px 10px;font-size:12px;"><i class="fas fa-trash"></i></button></td>' +
+    '</tr>').join('');
+}
 function toggleMetaInstalacao(){document.getElementById('grupoVendedorInstalacao').style.display=document.getElementById('tipoMetaInstalacao').value==='vendedor'?'block':'none';}
 
 // ===== PROMOÇÕES =====
