@@ -1201,20 +1201,30 @@ function carregarMetasAtivasVendedor() {
     const container = document.getElementById('painelMetasVendedor');
     if (!container) return;
     let html = '';
+    
+    // Meta de vendas pessoal
     const realizadoMes = DB.ativacoes.filter(a => a.vendedor_id === sessao.id && a.status === 'Aprovado').length;
     const metaVendasMes = DB.metas.mensalVendas || 150;
     const pctVendas = Math.min((realizadoMes / metaVendasMes) * 100, 100).toFixed(1);
     html += '<div class="meta-vendedor-card"><span class="meta-vendedor-label">🎯 Minha Meta Mensal</span><span class="meta-vendedor-value">' + realizadoMes + '/' + metaVendasMes + '</span><div class="progresso-bar-container" style="height:8px;margin-top:6px;"><div class="progresso-bar-liquido" style="width:' + pctVendas + '%;"></div></div></div>';
+    
+    // Metas de produtos (todas, pois são genéricas)
     DB.metas.produtos.forEach(p => {
         const realizado = DB.ativacoes.filter(a => a.vendedor_id === sessao.id && a.produto === p.produto && a.status === 'Aprovado').length;
         const pctProd = Math.min((realizado / p.mensal) * 100, 100).toFixed(1);
         html += '<div class="meta-vendedor-card"><span class="meta-vendedor-label">📦 ' + p.produto + '</span><span class="meta-vendedor-value">' + realizado + '/' + p.mensal + '</span><div class="progresso-bar-container" style="height:8px;margin-top:6px;"><div class="progresso-bar-liquido" style="width:' + pctProd + '%;"></div></div></div>';
     });
+    
+    // Metas de instalações - CORRIGIDO: filtra por vendedor OU empresa
     DB.metas.instalacoes.forEach(i => {
-        const instaladas = DB.ativacoes.filter(a => a.vendedor_id === sessao.id && a.instalacaoStatus === 'Instalado').length;
-        const pctInst = Math.min((instaladas / i.mensal) * 100, 100).toFixed(1);
-        html += '<div class="meta-vendedor-card"><span class="meta-vendedor-label">🔧 Instalações</span><span class="meta-vendedor-value">' + instaladas + '/' + i.mensal + '</span><div class="progresso-bar-container" style="height:8px;margin-top:6px;"><div class="progresso-bar-liquido" style="width:' + pctInst + '%;"></div></div></div>';
+        // Mostra se for meta da empresa OU se for meta do vendedor logado
+        if (i.tipo === 'empresa' || (i.tipo === 'vendedor' && i.entidadeId === sessao.id)) {
+            const instaladas = DB.ativacoes.filter(a => a.vendedor_id === sessao.id && a.instalacaoStatus === 'Instalado').length;
+            const pctInst = Math.min((instaladas / i.mensal) * 100, 100).toFixed(1);
+            html += '<div class="meta-vendedor-card"><span class="meta-vendedor-label">🔧 Instalações' + (i.tipo === 'vendedor' ? ' (Individual)' : ' (Empresa)') + '</span><span class="meta-vendedor-value">' + instaladas + '/' + i.mensal + '</span><div class="progresso-bar-container" style="height:8px;margin-top:6px;"><div class="progresso-bar-liquido" style="width:' + pctInst + '%;"></div></div></div>';
+        }
     });
+    
     container.innerHTML = html || '<div class="meta-vendedor-card"><span class="meta-vendedor-label">Nenhuma meta definida</span></div>';
 }
 
