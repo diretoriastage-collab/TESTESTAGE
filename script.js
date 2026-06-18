@@ -915,8 +915,8 @@ function abrirModalVisualizacao(id) {
         ['HP', a.hp],
         ['Viabilidade', a.viabilidade],
         ['Plano Tipo', a.planoTipo],
-        ['Tipo Aprov.', a.tipoAprovacao]
-        ['Observação', a.observacao || '']   // ← ADICIONE ESTA LINHA
+        ['Tipo Aprov.', a.tipoAprovacao],
+        ['Observação', a.observacao || '']
     ];
     campos.forEach(([label, valor]) => {
         html += `<div class="input-group"><label>${label}</label><input value="${valor || ''}" readonly style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);"></div>`;
