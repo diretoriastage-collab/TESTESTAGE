@@ -94,7 +94,7 @@ function dataParaBR(d) {
 }
 
 // ===== CONFIGURAÇÕES =====
-const GOOGLE_SHEET_VENDAS_URL = 'https://script.google.com/macros/s/AKfycbxlGfstFZ_7MN4UjXZQU8q57ELoOck9fwNZ2hJH07raQvn09v-VnLoceYzkQCbfGHkn/exec'; // SUBSTITUA PELO SEU NOVO URL
+const GOOGLE_SHEET_VENDAS_URL = 'https://script.google.com/macros/s/AKfycbxlGfstFZ_7MN4UjXZQU8q57ELoOck9fwNZ2hJH07raQvn09v-VnLoceYzkQCbfGHkn/exec';
 
 let sessao = JSON.parse(sessionStorage.getItem('stage_session'));
 let comparativoAtual = 'diario';
@@ -1460,7 +1460,6 @@ function carregarMetasAtivasVendedor() {
     if (!container) return;
     let html = '';
 
-    // Metas de vendas (pessoal)
     const realizadoMes = DB.ativacoes.filter(a => a.vendedor_id === sessao.id && a.status === 'Aprovado').length;
     const metaVendasMes = DB.metas.mensalVendas || 150;
     const pctVendas = Math.min((realizadoMes / metaVendasMes) * 100, 100).toFixed(1);
@@ -1470,7 +1469,6 @@ function carregarMetasAtivasVendedor() {
         <div class="progresso-bar-container" style="height:8px;margin-top:6px;"><div class="progresso-bar-liquido" style="width:${pctVendas}%;"></div></div>
     </div>`;
 
-    // Metas de produtos
     DB.metas.produtos.forEach(p => {
         const realizado = DB.ativacoes.filter(a => a.vendedor_id === sessao.id && a.produto === p.produto && a.status === 'Aprovado').length;
         const pctProd = Math.min((realizado / p.mensal) * 100, 100).toFixed(1);
@@ -1481,7 +1479,6 @@ function carregarMetasAtivasVendedor() {
         </div>`;
     });
 
-    // Metas de instalações
     DB.metas.instalacoes.filter(i => i.entidadeId === sessao.id || i.tipo === 'empresa').forEach(i => {
         const instaladas = DB.ativacoes.filter(a => a.vendedor_id === sessao.id && a.instalacaoStatus === 'Instalado').length;
         const pctInst = Math.min((instaladas / i.mensal) * 100, 100).toFixed(1);
