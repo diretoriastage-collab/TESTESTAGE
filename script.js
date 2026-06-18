@@ -636,7 +636,7 @@ async function buscarVendasAprovadasDaNuvem() {
                 instalacaoStatus: v.Instalação || 'Aguardando',
                 dataCriacao: v.DataCriacao || '',
                 observacao: v.Observacao || '',
-                ativadoPor: v['Ativado Por'] || '',
+                ativadoPor: v['AtivadoPor'] || '',
                 createdAt: v.CreatedAt ? parseInt(v.CreatedAt) : (v['Data Aprovação'] ? new Date(v['Data Aprovação']).getTime() : Date.now())
             }));
             const pendentesLocais = DB.ativacoes.filter(a => a.status !== 'Aprovado');
