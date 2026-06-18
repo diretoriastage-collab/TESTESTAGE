@@ -303,20 +303,46 @@
 
                 <!-- SEÇÃO METAS -->
                 <div id="secao-metas" class="section-hidden">
+                    <!-- METAS DE VENDAS (VENDEDOR) -->
                     <div class="form-glass">
-                        <h3><i class="fas fa-bullseye"></i> Metas de Vendas</h3>
+                        <h3><i class="fas fa-user"></i> Metas de Vendas (Vendedor)</h3>
                         <div class="form-grid">
-                            <div class="input-group"><label>Meta Diária</label><input type="number" id="metaDiariaVendas" min="1" value="10" onchange="salvarMetas()"></div>
-                            <div class="input-group"><label>Meta Quinzenal</label><input type="number" id="metaQuinzenalVendas" min="1" value="75" onchange="salvarMetas()"></div>
-                            <div class="input-group"><label>Meta Mensal</label><input type="number" id="metaMensalVendas" min="1" value="150" onchange="salvarMetas()"></div>
+                            <div class="input-group"><label>Meta Diária</label><input type="number" id="metaDiariaVendas" min="1" value="10"></div>
+                            <div class="input-group"><label>Meta Quinzenal</label><input type="number" id="metaQuinzenalVendas" min="1" value="75"></div>
+                            <div class="input-group"><label>Meta Mensal</label><input type="number" id="metaMensalVendas" min="1" value="150"></div>
+                        </div>
+                    </div>
+
+                    <!-- METAS DE VENDAS (EMPRESA) -->
+                    <div class="form-glass" style="margin-top:20px;">
+                        <h3><i class="fas fa-building"></i> Metas de Vendas (Empresa)</h3>
+                        <div class="form-grid">
+                            <div class="input-group"><label>Meta Diária Empresa</label><input type="number" id="metaDiariaEmpresa" min="1" value="10"></div>
+                            <div class="input-group"><label>Meta Quinzenal Empresa</label><input type="number" id="metaQuinzenalEmpresa" min="1" value="75"></div>
+                            <div class="input-group"><label>Meta Mensal Empresa</label><input type="number" id="metaMensalEmpresa" min="1" value="150"></div>
                         </div>
                         <div style="margin-top:10px; text-align:right;">
                             <button onclick="salvarMetas()" class="btn-glass-primary" style="padding:8px 20px;">
-                                <i class="fas fa-save"></i> Salvar Metas de Vendas
+                                <i class="fas fa-save"></i> Salvar Todas as Metas
                             </button>
                         </div>
                     </div>
-                    <div class="form-glass" style="margin-top:20px;"><h3><i class="fas fa-box"></i> Metas de Produtos</h3><div class="form-grid"><div class="input-group"><label>Produto</label><select id="produtoMetaSelect"></select></div><div class="input-group"><label>Meta Diária</label><input type="number" id="produtoDiaria" min="1" value="5"></div><div class="input-group"><label>Meta Quinzenal</label><input type="number" id="produtoQuinzenal" min="1" value="40"></div><div class="input-group"><label>Meta Mensal</label><input type="number" id="produtoMensal" min="1" value="80"></div></div><button onclick="adicionarMetaProduto()" class="btn-glass-primary" style="margin-top:10px;"><i class="fas fa-plus"></i> Adicionar Meta</button><div class="table-glass" style="margin-top:20px;" id="tabelaMetasProdutosContainer"><table><thead><tr><th>Produto</th><th>Diária</th><th>Quinzenal</th><th>Mensal</th><th>Ações</th></tr></thead><tbody id="tabelaMetasProdutos"></tbody></table></div></div>
+
+                    <!-- METAS DE PRODUTOS -->
+                    <div class="form-glass" style="margin-top:20px;">
+                        <h3><i class="fas fa-box"></i> Metas de Produtos</h3>
+                        <div class="form-grid">
+                            <div class="input-group"><label>Produto</label><select id="produtoMetaSelect"></select></div>
+                            <div class="input-group"><label>Tipo</label><select id="tipoMetaProduto"><option value="vendedor">Por Vendedor</option><option value="empresa">Empresa</option></select></div>
+                            <div class="input-group"><label>Meta Diária</label><input type="number" id="produtoDiaria" min="1" value="5"></div>
+                            <div class="input-group"><label>Meta Quinzenal</label><input type="number" id="produtoQuinzenal" min="1" value="40"></div>
+                            <div class="input-group"><label>Meta Mensal</label><input type="number" id="produtoMensal" min="1" value="80"></div>
+                        </div>
+                        <button onclick="adicionarMetaProduto()" class="btn-glass-primary" style="margin-top:10px;"><i class="fas fa-plus"></i> Adicionar Meta</button>
+                        <div class="table-glass" style="margin-top:20px;" id="tabelaMetasProdutosContainer"><table><thead><tr><th>Produto</th><th>Diária</th><th>Quinzenal</th><th>Mensal</th><th>Ações</th></tr></thead><tbody id="tabelaMetasProdutos"></tbody></table></div>
+                    </div>
+
+                    <!-- GERENCIAR PRODUTOS -->
                     <div class="form-glass" style="margin-top:20px;">
                         <h3><i class="fas fa-cogs"></i> Gerenciar Produtos</h3>
                         <div style="display:flex;gap:10px;margin-bottom:15px;">
@@ -327,6 +353,8 @@
                             <table><thead><tr><th>Produto</th><th>Ações</th></tr></thead><tbody id="tabelaProdutos"></tbody></table>
                         </div>
                     </div>
+
+                    <!-- OPÇÕES DE VENDA -->
                     <div class="form-glass" style="margin-top:20px;">
                         <h3><i class="fas fa-sliders-h"></i> Gerenciar Opções de Venda</h3>
                         <div class="form-grid">
@@ -336,8 +364,20 @@
                         </div>
                         <button onclick="salvarOpcoesVenda()" class="btn-glass-primary" style="margin-top:10px;"><i class="fas fa-save"></i> Salvar Opções</button>
                     </div>
-                    <div class="form-glass" style="margin-top:20px;"><h3><i class="fas fa-wrench"></i> Metas de Instalações</h3><div class="form-grid"><div class="input-group"><label>Tipo</label><select id="tipoMetaInstalacao" onchange="toggleMetaInstalacao()"><option value="vendedor">Por Vendedor</option><option value="empresa">Empresa</option></select></div><div class="input-group" id="grupoVendedorInstalacao"><label>Vendedor</label><select id="vendedorMetaInstalacao"></select></div><div class="input-group"><label>Meta Diária</label><input type="number" id="instalacaoDiaria" min="1" value="3"></div><div class="input-group"><label>Meta Quinzenal</label><input type="number" id="instalacaoQuinzenal" min="1" value="20"></div><div class="input-group"><label>Meta Mensal</label><input type="number" id="instalacaoMensal" min="1" value="45"></div></div><button onclick="adicionarMetaInstalacao()" class="btn-glass-primary" style="margin-top:10px;"><i class="fas fa-plus"></i> Adicionar Meta</button><div class="table-glass" style="margin-top:20px;" id="tabelaMetasInstalacoesContainer"><table><thead><tr><th>Tipo</th><th>Entidade</th><th>Diária</th><th>Quinzenal</th><th>Mensal</th><th>Ações</th></tr></thead><tbody id="tabelaMetasInstalacoes"></tbody></table></div></div>
-                    <div class="form-actions" style="margin-top:20px;"><button onclick="salvarMetas()" class="btn-glass-primary"><i class="fas fa-save"></i> Salvar Metas</button></div>
+
+                    <!-- METAS DE INSTALAÇÕES -->
+                    <div class="form-glass" style="margin-top:20px;">
+                        <h3><i class="fas fa-wrench"></i> Metas de Instalações</h3>
+                        <div class="form-grid">
+                            <div class="input-group"><label>Tipo</label><select id="tipoMetaInstalacao" onchange="toggleMetaInstalacao()"><option value="vendedor">Por Vendedor</option><option value="empresa">Empresa</option></select></div>
+                            <div class="input-group" id="grupoVendedorInstalacao"><label>Vendedor</label><select id="vendedorMetaInstalacao"></select></div>
+                            <div class="input-group"><label>Meta Diária</label><input type="number" id="instalacaoDiaria" min="1" value="3"></div>
+                            <div class="input-group"><label>Meta Quinzenal</label><input type="number" id="instalacaoQuinzenal" min="1" value="20"></div>
+                            <div class="input-group"><label>Meta Mensal</label><input type="number" id="instalacaoMensal" min="1" value="45"></div>
+                        </div>
+                        <button onclick="adicionarMetaInstalacao()" class="btn-glass-primary" style="margin-top:10px;"><i class="fas fa-plus"></i> Adicionar Meta</button>
+                        <div class="table-glass" style="margin-top:20px;" id="tabelaMetasInstalacoesContainer"><table><thead><tr><th>Tipo</th><th>Entidade</th><th>Diária</th><th>Quinzenal</th><th>Mensal</th><th>Ações</th></tr></thead><tbody id="tabelaMetasInstalacoes"></tbody></table></div>
+                    </div>
                 </div>
 
                 <!-- SEÇÃO PROMOÇÕES -->
