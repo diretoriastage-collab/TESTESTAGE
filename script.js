@@ -388,6 +388,56 @@ function fecharModalBonusAtivo() {
     if (overlay) overlay.remove();
 }
 
+// ===== CONTROLE DE DATA NA VENDA (NOVA FUNCIONALIDADE) =====
+function toggleDataVenda() {
+    const checkAtual = document.getElementById('checkDataAtual');
+    const checkNova = document.getElementById('checkNovaData');
+    const inputNovaData = document.getElementById('inputNovaData');
+    
+    if (checkAtual.checked && checkNova.checked) {
+        if (event && event.target === checkAtual) {
+            checkNova.checked = false;
+            inputNovaData.style.display = 'none';
+        } else {
+            checkAtual.checked = false;
+            inputNovaData.style.display = 'block';
+            inputNovaData.focus();
+        }
+    } else if (checkAtual.checked) {
+        checkNova.checked = false;
+        inputNovaData.style.display = 'none';
+        inputNovaData.value = '';
+    } else if (checkNova.checked) {
+        checkAtual.checked = false;
+        inputNovaData.style.display = 'block';
+        inputNovaData.focus();
+    } else {
+        checkAtual.checked = true;
+        inputNovaData.style.display = 'none';
+    }
+}
+
+function atualizarDataVenda() {
+    const inputNovaData = document.getElementById('inputNovaData');
+    if (inputNovaData.value) {
+        const [ano, mes, dia] = inputNovaData.value.split('-');
+        console.log('📅 Data selecionada:', `${dia}/${mes}/${ano}`);
+    }
+}
+
+function obterDataVenda() {
+    const checkAtual = document.getElementById('checkDataAtual');
+    if (checkAtual && checkAtual.checked) {
+        return hojeBR();
+    }
+    const inputNovaData = document.getElementById('inputNovaData');
+    if (inputNovaData && inputNovaData.value) {
+        const [ano, mes, dia] = inputNovaData.value.split('-');
+        return `${dia}/${mes}/${ano}`;
+    }
+    return hojeBR();
+}
+
 // ===== SINCRONIZAÇÕES GLOBAIS =====
 async function sincronizarUsuariosDaNuvem() {
   try {
@@ -1069,6 +1119,13 @@ async function removerVenda(id) {
 function limparFormularioVenda() {
     const ids = ['vNomeCompleto','vCpf','vDataNasc','vOrgaoExpeditor','vNomeMae','vRg','vDataExpedicao','vEmail','vTelefone1','vTelefone2','vCep','vLogradouro','vNumero','vComplemento','vBairro','vUf','vCidade','vPontoReferencia','vVelocidade','vPlano','vValor','vVencimento','vFormaPagamento','vHp','vViabilidade','vPlanoTipo','vTipoAprovacao'];
     ids.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    // Resetar checkboxes de data
+    const checkAtual = document.getElementById('checkDataAtual');
+    const checkNova = document.getElementById('checkNovaData');
+    const inputNovaData = document.getElementById('inputNovaData');
+    if (checkAtual) checkAtual.checked = true;
+    if (checkNova) checkNova.checked = false;
+    if (inputNovaData) { inputNovaData.style.display = 'none'; inputNovaData.value = ''; }
 }
 
 let enviandoVenda = false;
@@ -1098,7 +1155,11 @@ function enviarVenda() {
     for (let c of obrigatorios) { if (!campos[c]) { alert('Preencha: ' + c); return; } }
     if (campos.dataNasc) { const d = parseDateBR(campos.dataNasc); campos.dataNasc = d ? dataParaBR(d) : campos.dataNasc; }
     if (campos.dataExpedicao) { const d = parseDateBR(campos.dataExpedicao); campos.dataExpedicao = d ? dataParaBR(d) : campos.dataExpedicao; }
-    const nova = { ...campos, vendedor_id: sessao.id, vendedorNome: sessao.nome, status: "Pendente", data: hojeBR(), finalizada: false, createdAt: Date.now(), newBadge: true };
+    
+    // 🔥 USA A FUNÇÃO obterDataVenda() PARA DEFINIR A DATA
+    const dataVenda = obterDataVenda();
+    
+    const nova = { ...campos, vendedor_id: sessao.id, vendedorNome: sessao.nome, status: "Pendente", data: dataVenda, finalizada: false, createdAt: Date.now(), newBadge: true };
     
     enviandoVenda = true;
     const btn = document.querySelector('#secao-enviarVenda .btn-glass-primary');
@@ -1109,7 +1170,7 @@ function enviarVenda() {
     
     fetchFromGS('adicionarPendente', { venda: JSON.stringify(nova) }).then(resp => {
         if (resp && resp.ok) { 
-            alert('✅ Venda enviada!'); 
+            alert('✅ Venda enviada com data: ' + dataVenda); 
             limparFormularioVenda(); 
             DB.ativacoes.unshift({ ...nova, id: resp.id }); 
             salvarDB(); 
@@ -1227,7 +1288,6 @@ function carregarMetasAtivasVendedor() {
     
     // Metas de instalações - CORRIGIDO: filtra por vendedor OU empresa
     DB.metas.instalacoes.forEach(i => {
-        // Mostra se for meta da empresa OU se for meta do vendedor logado
         if (i.tipo === 'empresa' || (i.tipo === 'vendedor' && i.entidadeId === sessao.id)) {
             const instaladas = DB.ativacoes.filter(a => a.vendedor_id === sessao.id && a.instalacaoStatus === 'Instalado').length;
             const pctInst = Math.min((instaladas / i.mensal) * 100, 100).toFixed(1);
@@ -1764,6 +1824,33 @@ function mostrarVendedor(){
     sincronizarMetasVendas(); sincronizarProdutos(); sincronizarMetasProdutos(); sincronizarOpcoesVenda(); sincronizarMetasInstalacoes();
     sincronizarPromocoes().then(()=>renderBonusAtivoWidget());
 }
+
+// ===== FECHAR MODAIS COM ESC (NOVA FUNCIONALIDADE) =====
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' || e.keyCode === 27) {
+        const modais = [
+            { id: 'modalAtivacao', fechar: fecharModalAtivacao },
+            { id: 'modalInfoAdicional', fechar: fecharModalInfoAdicional },
+            { id: 'modalVisualizacao', fechar: fecharModalVisualizacao },
+            { id: 'modalEditarUsuario', fechar: fecharModalEditar },
+            { id: 'modalStatus', fechar: fecharModalStatus },
+            { id: 'modalSelecionarMes', fechar: fecharSelecaoMes },
+            { id: 'modalNovaVenda', fechar: fecharModalNovaVenda },
+            { id: 'modalParabens', fechar: () => { document.getElementById('modalParabens').style.display = 'none'; } },
+            { id: 'modalParabensVendedor', fechar: () => { document.getElementById('modalParabensVendedor').style.display = 'none'; } },
+            { id: 'stage-bonus-modal-overlay', fechar: fecharModalBonusAtivo }
+        ];
+        
+        for (let modal of modais) {
+            const el = document.getElementById(modal.id);
+            if (el && el.style.display === 'flex') {
+                modal.fechar();
+                e.preventDefault();
+                break;
+            }
+        }
+    }
+});
 
 // ===== INICIALIZAÇÃO =====
 document.addEventListener('DOMContentLoaded',()=>{
