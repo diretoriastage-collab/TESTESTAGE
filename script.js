@@ -92,7 +92,7 @@ function dataParaBR(d) {
 }
 
 // ===== CONFIGURAÇÕES =====
-const GOOGLE_SHEET_VENDAS_URL = 'https://script.google.com/macros/s/AKfycbwm82w6auPkC9axEayYP-RaEQGhdlloocgFl34Kfg-4B6hf2tM1A24pVg8d1XB1GxDi/exec';
+const GOOGLE_SHEET_VENDAS_URL = 'https://script.google.com/macros/s/AKfycbxEGFWX55q2f3_Kmtqkx1tQS7IOmpJ1t24IdJ4HmUejzolgz-B-2Y3Ny9lstqRewMir/exec';
 
 let sessao = JSON.parse(sessionStorage.getItem('stage_session'));
 let comparativoAtual = 'diario';
@@ -658,6 +658,7 @@ async function buscarPendentesDaNuvem() {
     } catch (err) { console.warn('Erro ao buscar pendentes:', err); }
 }
 
+// ===== BUSCAR VENDAS APROVADAS (ATUALIZADO PARA USAR DATA DE ENVIO) =====
 async function buscarVendasAprovadasDaNuvem() {
     if (!sessao) return;
     try {
@@ -699,7 +700,7 @@ async function buscarVendasAprovadasDaNuvem() {
                 status: 'Aprovado',
                 vendedorNome: v.Vendedor || '',
                 vendedor_id: v.VendedorId ? parseInt(v.VendedorId) : null,
-                data: v['Data Aprovação'] ? formatarBR(v['Data Aprovação']) : hojeBR(),
+                data: v['Data Envio'] ? formatarBR(v['Data Envio']) : (v['Data Aprovação'] ? formatarBR(v['Data Aprovação']) : hojeBR()),
                 finalizada: true,
                 instalacaoStatus: v.Instalação || 'Aguardando',
                 dataCriacao: v.DataCriacao || '',
@@ -897,12 +898,11 @@ async function fecharModalAtivacao() {
         a.infoData = document.getElementById('infoData') ? document.getElementById('infoData').value : '';
         a.infoPeriodo = document.getElementById('infoPeriodo') ? document.getElementById('infoPeriodo').value : '';
         
-        // 🔥 CORREÇÃO: Captura o AtivadoPor do modal de informações adicionais
+        // Captura o AtivadoPor do modal de informações adicionais
         const elAtivadoPor = document.getElementById('infoAtivadoPor');
         if (elAtivadoPor && elAtivadoPor.value) {
             a.ativadoPor = elAtivadoPor.value;
         }
-        // Garante que ativadoPor existe
         a.ativadoPor = a.ativadoPor || '';
 
         if (novoStatus === 'Aprovado' && a.status !== 'Aprovado') {
@@ -965,12 +965,12 @@ function salvarInfoAdicional() {
     fecharModalInfoAdicional();
 }
 
-// ===== VENDAS APROVADAS =====
+// ===== VENDAS APROVADAS (CORRIGIDO: VENDEDOR E ORDEM) =====
 function carregarVendasAprovadas(pagina) {
     if (!pagina) pagina = paginaAtualVendasAprovadas;
     const tabela = document.getElementById('tabelaVendasAprovadas');
     if (!tabela) return;
-    let aprovadas = DB.ativacoes.filter(a => a.status === 'Aprovado').reverse();
+    let aprovadas = DB.ativacoes.filter(a => a.status === 'Aprovado'); // sem reverse, mais novas primeiro
     const elFiltroData = document.getElementById('filtroDataAprovadas');
     const filtroData = elFiltroData ? elFiltroData.value : null;
     if (filtroData) {
@@ -984,11 +984,12 @@ function carregarVendasAprovadas(pagina) {
     const itensExibidos = aprovadas.slice(inicio, inicio + itensPorPagina);
     tabela.innerHTML = itensExibidos.length ? itensExibidos.map(a => {
         const vendedor = DB.usuarios.find(u => u.id === a.vendedor_id);
+        const nomeVendedor = vendedor ? vendedor.nome : (a.vendedorNome || 'N/A');
         const dataFormatada = a.data ? formatarBR(a.data) : '—';
         return '<tr>' +
             '<td><strong>' + (a.nomeCompleto || '—') + '</strong></td>' +
             '<td>' + (a.produto || a.plano || '—') + '</td>' +
-            '<td>' + (vendedor ? vendedor.nome : 'N/A') + '</td>' +
+            '<td>' + nomeVendedor + '</td>' +
             '<td>R$ ' + parseFloat(a.valor || 0).toFixed(2).replace('.', ',') + '</td>' +
             '<td>' + dataFormatada + '</td>' +
             '<td>' +
@@ -1156,7 +1157,7 @@ function enviarVenda() {
     if (campos.dataNasc) { const d = parseDateBR(campos.dataNasc); campos.dataNasc = d ? dataParaBR(d) : campos.dataNasc; }
     if (campos.dataExpedicao) { const d = parseDateBR(campos.dataExpedicao); campos.dataExpedicao = d ? dataParaBR(d) : campos.dataExpedicao; }
     
-    // 🔥 USA A FUNÇÃO obterDataVenda() PARA DEFINIR A DATA
+    // USA A FUNÇÃO obterDataVenda() PARA DEFINIR A DATA
     const dataVenda = obterDataVenda();
     
     const nova = { ...campos, vendedor_id: sessao.id, vendedorNome: sessao.nome, status: "Pendente", data: dataVenda, finalizada: false, createdAt: Date.now(), newBadge: true };
@@ -1792,7 +1793,7 @@ function carregarListaStatusFlags(){const c=document.getElementById('listaStatus
 async function adicionarStatusFlag(){const n=document.getElementById('novoStatusNome').value.trim(),c=document.getElementById('novoStatusCor').value;if(!n)return alert('Digite um nome!');try{const resp=await fetchFromGS('adicionarStatusFlag',{nome:n,cor:c});if(resp&&resp.ok){DB.statusFlags.push({id:resp.id,nome:n,cor:c});salvarDB();carregarListaStatusFlags();document.getElementById('novoStatusNome').value='';}else alert('Erro');}catch(err){alert('Erro de comunicação.');}}
 async function removerStatusFlag(id){try{const resp=await fetchFromGS('removerStatusFlag',{id});if(resp&&resp.ok){DB.statusFlags=DB.statusFlags.filter(f=>f.id!==id);salvarDB();carregarListaStatusFlags();}}catch(err){alert('Erro');}}
 
-// ===== RECUPERAR VENDAS / BAIXAR PLANILHA =====
+// ===== RECUPERAR VENDAS / BAIXAR PLANILHA (mantidas, mas botões removidos do HTML) =====
 async function recuperarVendasDaPlanilha(){if(!confirm('Sobrescrever vendas locais?'))return;try{await Promise.all([buscarPendentesDaNuvem(),buscarVendasAprovadasDaNuvem()]);alert('✅ Recuperado!');carregarVendasAprovadas();}catch(e){alert('❌ Erro');}}
 function toggleDropdown(){const d=document.getElementById('dropdownPlanilha');d.style.display=d.style.display==='none'?'block':'none';}
 function abrirSelecaoMes(){document.getElementById('modalSelecionarMes').style.display='flex';}
