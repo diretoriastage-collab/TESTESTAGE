@@ -846,9 +846,20 @@ async function fecharModalAtivacao() {
         a.contrato = document.getElementById('infoContrato') ? document.getElementById('infoContrato').value : '';
         a.infoData = document.getElementById('infoData') ? document.getElementById('infoData').value : '';
         a.infoPeriodo = document.getElementById('infoPeriodo') ? document.getElementById('infoPeriodo').value : '';
+        
+        // 🔥 CORREÇÃO: Captura o AtivadoPor do modal de informações adicionais
+        const elAtivadoPor = document.getElementById('infoAtivadoPor');
+        if (elAtivadoPor && elAtivadoPor.value) {
+            a.ativadoPor = elAtivadoPor.value;
+        }
+        // Garante que ativadoPor existe
+        a.ativadoPor = a.ativadoPor || '';
 
         if (novoStatus === 'Aprovado' && a.status !== 'Aprovado') {
-            if (!a.contrato || !a.infoData || !a.infoPeriodo) { alert('⚠️ Preencha Contrato, Data e Período de Instalação antes de aprovar.'); return; }
+            if (!a.contrato || !a.infoData || !a.infoPeriodo) { 
+                alert('⚠️ Preencha Contrato, Data e Período de Instalação antes de aprovar.'); 
+                return; 
+            }
             if (confirm('Aprovar esta venda?')) {
                 const resp = await fetchFromGS('aprovarVenda', {
                     uuid: a.id, status: 'APROVADO', cliente: a.nomeCompleto, cpf: a.cpf,
@@ -859,7 +870,7 @@ async function fecharModalAtivacao() {
                     plano: a.produto, velocidade: a.velocidade, valor: a.valor, vencimento: a.vencimento,
                     formaPagamento: a.formaPagamento, hp: a.hp, viabilidade: a.viabilidade, planoTipo: a.planoTipo,
                     tipoAprovacao: a.tipoAprovacao, contrato: a.contrato, infoData: a.infoData, infoPeriodo: a.infoPeriodo,
-                    vendedorNome: a.vendedorNome, vendedorId: a.vendedor_id, ativadoPor: a.ativadoPor || ''
+                    vendedorNome: a.vendedorNome, vendedorId: a.vendedor_id, ativadoPor: a.ativadoPor
                 });
                 if (resp && resp.ok) {
                     alert('✅ Venda aprovada!');
@@ -880,7 +891,6 @@ async function fecharModalAtivacao() {
     if (document.getElementById('secao-vendasAprovadas') && document.getElementById('secao-vendasAprovadas').classList.contains('section-active')) carregarVendasAprovadas();
     if (sessao.tipo === 'admin') carregarDashboard();
 }
-
 function abrirModalInfoAdicional() {
     if (!vendaSendoVisualizada) { alert('Nenhuma venda selecionada.'); return; }
     carregarDropdownAtivadoPor();
