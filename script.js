@@ -412,7 +412,6 @@ async function sincronizarStatusFlagsDaNuvem() {
     if (resp && resp.flags && Array.isArray(resp.flags)) {
       DB.statusFlags = resp.flags.map(f => ({ id: f.id, nome: f.nome, cor: f.cor }));
       
-      // Garante que as flags padrão existam no Google Sheets
       const padroes = [
         { nome: 'Pendente', cor: '#ffa502' },
         { nome: 'Aprovado', cor: '#2ed573' },
@@ -654,9 +653,8 @@ function carregarAtivacoes(pagina = paginaAtualAtivacoes) {
     tabela.innerHTML = itensExibidos.map(a => {
         const idStr = String(a.id);
         const statusFlag = getStatusBadge(a.status);
-        const newBadge = a.newBadge ? `<span class="stage-new-badge" title="Nova venda">🔥 NEW</span>` : '';
         return `<tr>
-            <td>${newBadge ? `<span class="stage-new-badge" style="margin-right:8px;">🔥 NEW</span>` : ''}<strong>${a.nomeCompleto || '—'}</strong></td>
+            <td>${a.newBadge ? `<span class="stage-new-badge" style="margin-right:8px;">🔥 NEW</span>` : ''}<strong>${a.nomeCompleto || '—'}</strong></td>
             <td>${a.produto || a.plano || '—'}</td>
             <td>${a.vendedorNome || '—'}</td>
             <td><span style="color:${statusFlag.cor};font-weight:600;">● ${a.status}</span></td>
@@ -1403,7 +1401,6 @@ function mostrarSecaoVendedor(e, secao) {
     }
 }
 
-
 function carregarInicioVendedor() {
     if (!sessao) return;
     const metaMensal = DB.metas.mensalVendas || 150;
@@ -1424,7 +1421,38 @@ function carregarInicioVendedor() {
     document.getElementById('totalVendasMesVendedor').textContent = totalVendas;
     document.getElementById('barraProgressoVendedor').style.width = `${percentual}%`;
     atualizarPainelInstalacoes();
+    carregarMetasAtivasVendedor();
 }
+
+function carregarMetasAtivasVendedor() {
+    const container = document.getElementById('painelMetasVendedor');
+    if (!container) return;
+    let html = '';
+
+    // Meta de vendas
+    if (DB.metas.diariaVendas) {
+        html += `<div class="meta-vendedor-card"><span class="meta-vendedor-label">🎯 Meta Diária</span><span class="meta-vendedor-value">${DB.metas.diariaVendas}</span><span class="meta-vendedor-note">vendas</span></div>`;
+    }
+    if (DB.metas.quinzenalVendas) {
+        html += `<div class="meta-vendedor-card"><span class="meta-vendedor-label">📅 Meta Quinzenal</span><span class="meta-vendedor-value">${DB.metas.quinzenalVendas}</span><span class="meta-vendedor-note">vendas</span></div>`;
+    }
+    if (DB.metas.mensalVendas) {
+        html += `<div class="meta-vendedor-card"><span class="meta-vendedor-label">📆 Meta Mensal</span><span class="meta-vendedor-value">${DB.metas.mensalVendas}</span><span class="meta-vendedor-note">vendas</span></div>`;
+    }
+
+    // Metas de produtos associadas ao vendedor (se houver)
+    DB.metas.produtos.forEach(p => {
+        html += `<div class="meta-vendedor-card"><span class="meta-vendedor-label">📦 ${p.produto} (Mensal)</span><span class="meta-vendedor-value">${p.mensal}</span><span class="meta-vendedor-note">unidades</span></div>`;
+    });
+
+    // Metas de instalações associadas ao vendedor
+    DB.metas.instalacoes.filter(i => i.tipo === 'vendedor' && i.entidadeId === sessao.id).forEach(i => {
+        html += `<div class="meta-vendedor-card"><span class="meta-vendedor-label">🔧 Instalações (Mensal)</span><span class="meta-vendedor-value">${i.mensal}</span><span class="meta-vendedor-note">instalações</span></div>`;
+    });
+
+    container.innerHTML = html || '<div class="meta-vendedor-card"><span class="meta-vendedor-label">Nenhuma meta definida</span></div>';
+}
+
 function atualizarPainelInstalacoes() {
     const hoje = new Date();
     const dia = hoje.getDate();
