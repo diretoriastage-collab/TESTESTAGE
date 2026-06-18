@@ -889,44 +889,143 @@ function abrirModalVisualizacao(id) {
     `;
     html += `<div class="form-grid" style="grid-template-columns:1fr 1fr;gap:8px;">`;
     const campos = [
-        ['Nome Completo', a.nomeCompleto],
-        ['CPF', a.cpf],
-        ['Data Nasc.', dataNascFormatada],
-        ['Órgão Exp.', a.orgaoExpeditor],
-        ['Nome da Mãe', a.nomeMae],
-        ['RG', a.rg],
-        ['Data Exp.', dataExpedicaoFormatada],
-        ['Email', a.email],
-        ['Tel 1', a.telefone1],
-        ['Tel 2', a.telefone2],
-        ['CEP', a.cep],
-        ['Logradouro', a.logradouro],
-        ['N°', a.numero],
-        ['Complemento', a.complemento],
-        ['Bairro', a.bairro],
-        ['Estado', a.uf],
-        ['Cidade', a.cidade],
-        ['Ponto Ref.', a.pontoReferencia],
-        ['Velocidade', a.velocidade],
-        ['Produto', a.produto || a.plano],
-        ['Valor', a.valor],
-        ['Vencimento', a.vencimento],
-        ['Pagamento', a.formaPagamento],
-        ['HP', a.hp],
-        ['Viabilidade', a.viabilidade],
-        ['Plano Tipo', a.planoTipo],
-        ['Tipo Aprov.', a.tipoAprovacao],
-        ['Observação', a.observacao || '']
+        ['Nome Completo', a.nomeCompleto, 'viewNomeCompleto'],
+        ['CPF', a.cpf, 'viewCpf'],
+        ['Data Nasc.', dataNascFormatada, 'viewDataNasc'],
+        ['Órgão Exp.', a.orgaoExpeditor, 'viewOrgaoExpeditor'],
+        ['Nome da Mãe', a.nomeMae, 'viewNomeMae'],
+        ['RG', a.rg, 'viewRg'],
+        ['Data Exp.', dataExpedicaoFormatada, 'viewDataExpedicao'],
+        ['Email', a.email, 'viewEmail'],
+        ['Tel 1', a.telefone1, 'viewTelefone1'],
+        ['Tel 2', a.telefone2, 'viewTelefone2'],
+        ['CEP', a.cep, 'viewCep'],
+        ['Logradouro', a.logradouro, 'viewLogradouro'],
+        ['N°', a.numero, 'viewNumero'],
+        ['Complemento', a.complemento, 'viewComplemento'],
+        ['Bairro', a.bairro, 'viewBairro'],
+        ['Estado', a.uf, 'viewUf'],
+        ['Cidade', a.cidade, 'viewCidade'],
+        ['Ponto Ref.', a.pontoReferencia, 'viewPontoReferencia'],
+        ['Velocidade', a.velocidade, 'viewVelocidade'],
+        ['Produto', a.produto || a.plano, 'viewProduto'],
+        ['Valor', a.valor, 'viewValor'],
+        ['Vencimento', a.vencimento, 'viewVencimento'],
+        ['Pagamento', a.formaPagamento, 'viewFormaPagamento'],
+        ['HP', a.hp, 'viewHp'],
+        ['Viabilidade', a.viabilidade, 'viewViabilidade'],
+        ['Plano Tipo', a.planoTipo, 'viewPlanoTipo'],
+        ['Tipo Aprov.', a.tipoAprovacao, 'viewTipoAprovacao'],
+        ['Observação', a.observacao || '', 'viewObservacao']
     ];
-    campos.forEach(([label, valor]) => {
-        html += `<div class="input-group"><label>${label}</label><input value="${valor || ''}" readonly style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);"></div>`;
+    campos.forEach(([label, valor, id]) => {
+        if (label === 'Observação') {
+            html += `<div class="input-group" style="grid-column:span 2;"><label>${label}</label><textarea id="${id}" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);min-height:80px;">${valor || ''}</textarea></div>`;
+        } else {
+            html += `<div class="input-group"><label>${label}</label><input id="${id}" value="${valor || ''}" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);"></div>`;
+        }
     });
     html += `</div>`;
+    html += `<div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;"><button onclick="fecharModalVisualizacao()" class="btn-glass-sm" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);">Fechar</button><button onclick="salvarEdicaoVenda()" class="btn-glass-sm" style="background:#2ed573;color:#0b0b0b;">Salvar alterações</button></div>`;
     document.getElementById('conteudoModalVisualizacao').innerHTML = html;
     document.getElementById('modalVisualizacao').style.display = 'flex';
 }
 
 function fecharModalVisualizacao() { document.getElementById('modalVisualizacao').style.display = 'none'; }
+
+async function salvarEdicaoVenda() {
+    const a = DB.ativacoes.find(x => x.id === vendaSendoVisualizada);
+    if (!a) {
+        alert('Venda não encontrada.');
+        return;
+    }
+    a.nomeCompleto = document.getElementById('viewNomeCompleto')?.value.trim() || '';
+    a.cpf = document.getElementById('viewCpf')?.value.trim() || '';
+    a.dataNasc = document.getElementById('viewDataNasc')?.value.trim() || '';
+    a.orgaoExpeditor = document.getElementById('viewOrgaoExpeditor')?.value.trim() || '';
+    a.nomeMae = document.getElementById('viewNomeMae')?.value.trim() || '';
+    a.rg = document.getElementById('viewRg')?.value.trim() || '';
+    a.dataExpedicao = document.getElementById('viewDataExpedicao')?.value.trim() || '';
+    a.email = document.getElementById('viewEmail')?.value.trim() || '';
+    a.telefone1 = document.getElementById('viewTelefone1')?.value.trim() || '';
+    a.telefone2 = document.getElementById('viewTelefone2')?.value.trim() || '';
+    a.cep = document.getElementById('viewCep')?.value.trim() || '';
+    a.logradouro = document.getElementById('viewLogradouro')?.value.trim() || '';
+    a.numero = document.getElementById('viewNumero')?.value.trim() || '';
+    a.complemento = document.getElementById('viewComplemento')?.value.trim() || '';
+    a.bairro = document.getElementById('viewBairro')?.value.trim() || '';
+    a.uf = document.getElementById('viewUf')?.value.trim() || '';
+    a.cidade = document.getElementById('viewCidade')?.value.trim() || '';
+    a.pontoReferencia = document.getElementById('viewPontoReferencia')?.value.trim() || '';
+    a.velocidade = document.getElementById('viewVelocidade')?.value.trim() || '';
+    a.produto = document.getElementById('viewProduto')?.value.trim() || '';
+    a.plano = a.produto;
+    a.valor = document.getElementById('viewValor')?.value.trim() || '';
+    a.vencimento = document.getElementById('viewVencimento')?.value.trim() || '';
+    a.formaPagamento = document.getElementById('viewFormaPagamento')?.value.trim() || '';
+    a.hp = document.getElementById('viewHp')?.value.trim() || '';
+    a.viabilidade = document.getElementById('viewViabilidade')?.value.trim() || '';
+    a.planoTipo = document.getElementById('viewPlanoTipo')?.value.trim() || '';
+    a.tipoAprovacao = document.getElementById('viewTipoAprovacao')?.value.trim() || '';
+    a.observacao = document.getElementById('viewObservacao')?.value.trim() || '';
+
+    salvarDB();
+    const params = {
+        uuid: a.id,
+        cliente: a.nomeCompleto,
+        cpf: a.cpf,
+        dataNasc: a.dataNasc,
+        nomeMae: a.nomeMae,
+        rg: a.rg,
+        orgaoExpedidor: a.orgaoExpeditor,
+        dataExpedicao: a.dataExpedicao,
+        email: a.email,
+        telefone1: a.telefone1,
+        telefone2: a.telefone2,
+        cep: a.cep,
+        logradouro: a.logradouro,
+        numero: a.numero,
+        complemento: a.complemento,
+        bairro: a.bairro,
+        uf: a.uf,
+        cidade: a.cidade,
+        pontoReferencia: a.pontoReferencia,
+        plano: a.produto,
+        velocidade: a.velocidade,
+        valor: a.valor,
+        vencimento: a.vencimento,
+        formaPagamento: a.formaPagamento,
+        hp: a.hp,
+        viabilidade: a.viabilidade,
+        planoTipo: a.planoTipo,
+        tipoAprovacao: a.tipoAprovacao,
+        observacao: a.observacao,
+        contrato: a.contrato || '',
+        infoData: a.infoData || '',
+        infoPeriodo: a.infoPeriodo || '',
+        vendedorNome: a.vendedorNome || '',
+        vendedorId: a.vendedor_id || ''
+    };
+    try {
+        const resp = await fetchFromGS('editarVenda', params);
+        if (resp && resp.ok === true) {
+            alert('✅ Dados da venda atualizados e sincronizados com a planilha!');
+        } else {
+            alert('⚠️ Alterações salvas localmente, mas houve falha ao sincronizar com a planilha.');
+            console.warn('editarVenda retorno:', resp);
+        }
+    } catch (e) {
+        alert('⚠️ Alterações salvas localmente, mas falha de comunicação com a planilha.');
+        console.warn('Erro editarVenda:', e);
+    }
+    carregarVendasAprovadas();
+    if (sessao?.tipo === 'admin') carregarDashboard();
+    if (sessao?.tipo === 'vendedor') {
+        carregarControleVendas();
+        carregarInstalacoes();
+    }
+    document.getElementById('modalVisualizacao').style.display = 'none';
+}
 
 // ===== REMOVER VENDA =====
 async function removerVenda(id) {
