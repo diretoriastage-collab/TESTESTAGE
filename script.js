@@ -92,7 +92,7 @@ function dataParaBR(d) {
 }
 
 // ===== CONFIGURAÇÕES =====
-const GOOGLE_SHEET_VENDAS_URL = 'https://script.google.com/macros/s/AKfycbxlGfstFZ_7MN4UjXZQU8q57ELoOck9fwNZ2hJH07raQvn09v-VnLoceYzkQCbfGHkn/exec';
+const GOOGLE_SHEET_VENDAS_URL = 'https://script.google.com/macros/s/AKfycbwo_Alsd6g95ZrI0pJ8Wigo1IDG91FBKMBHdMZVwinSLgY2-CvdYds2TXxoATgfWUyk/exec';
 
 let sessao = JSON.parse(sessionStorage.getItem('stage_session'));
 let comparativoAtual = 'diario';
@@ -342,19 +342,41 @@ function mostrarModalBonusAtivo() {
     const overlay = document.createElement('div');
     overlay.id = 'stage-bonus-modal-overlay';
     overlay.className = 'stage-bonus-modal-overlay';
-    overlay.innerHTML = '<div class="stage-bonus-modal">' +
+    
+    const styleEl = document.createElement('style');
+    styleEl.textContent = '' +
+        '@keyframes stage-prize-blink {' +
+            '0%,100% { opacity:1; transform:scale(1); text-shadow:0 0 10px #ffd700,0 0 20px #ff8c00,0 0 40px #ff4500; }' +
+            '50% { opacity:0.5; transform:scale(1.1); text-shadow:0 0 25px #fff,0 0 50px #ffd700,0 0 90px #ff4500; }' +
+        '}' +
+        '.stage-prize-blink {' +
+            'display:inline-block;' +
+            'animation: stage-prize-blink 0.8s ease-in-out infinite;' +
+            'font-size:28px !important;' +
+            'font-weight:900 !important;' +
+            'color:#ffd700 !important;' +
+            'padding:12px 24px;' +
+            'border-radius:16px;' +
+            'background:rgba(255,215,0,0.15);' +
+            'border:2px solid rgba(255,215,0,0.5);' +
+            'margin-top:10px;' +
+            'letter-spacing:1px;' +
+        '}';
+    overlay.appendChild(styleEl);
+    
+    overlay.innerHTML += '<div class="stage-bonus-modal">' +
         '<h2>🔥 Bônus Ativo!</h2>' +
         '<p>Temos ' + ativa.length + ' ' + (ativa.length === 1 ? 'promoção' : 'promoções') + ' ativa' + (ativa.length > 1 ? 's' : '') + '. Confira os detalhes:</p>' +
         ativa.map(function(p) {
-            return '<div class="stage-prize" style="margin-bottom:10px;">' +
+            return '<div class="stage-prize" style="margin-bottom:12px;">' +
                 '<div style="font-size:14px;">📌 <strong>' + p.tipo.toUpperCase() + '</strong></div>' +
-                (p.descricao ? '<div style="font-size:13px;color:#ddd;">📝 ' + p.descricao + '</div>' : '') +
-                '<div style="font-size:13px;">🎯 Meta: <strong>' + p.quantidade + '</strong></div>' +
+                (p.descricao ? '<div style="font-size:13px;color:#ddd;margin-top:4px;font-style:italic;">📝 ' + p.descricao + '</div>' : '') +
+                '<div style="font-size:13px;margin-top:4px;">🎯 Meta: <strong>' + p.quantidade + '</strong></div>' +
                 '<div style="font-size:13px;">📅 Período: <strong>' + new Date(p.inicio).toLocaleDateString('pt-BR') + ' → ' + new Date(p.fim).toLocaleDateString('pt-BR') + '</strong></div>' +
-                '<div style="font-size:15px; color:#ffd700; font-weight:800;">🏆 Prêmio: ' + p.premio + '</div>' +
+                '<div class="stage-prize-blink">🏆 ' + p.premio + '</div>' +
                 '</div>';
         }).join('') +
-        '<p style="color:#ffddb3; font-size:13px;">Continue vendendo para garantir seu prêmio!</p>' +
+        '<p style="color:#ffddb3; font-size:13px;margin-top:10px;">Continue vendendo para garantir seu prêmio!</p>' +
         '<button class="stage-close-btn" onclick="fecharModalBonusAtivo()">Entendido!</button>' +
         '</div>';
     overlay.onclick = function(e) { if (e.target === overlay) fecharModalBonusAtivo(); };
