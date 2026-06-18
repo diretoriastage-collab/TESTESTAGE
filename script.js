@@ -94,7 +94,7 @@ function dataParaBR(d) {
 }
 
 // ===== CONFIGURAÇÕES =====
-const GOOGLE_SHEET_VENDAS_URL = 'https://script.google.com/macros/s/AKfycbwegEqf-1McwTqsOvi_xANGMQ0C0KBfKMEIWLIu8LvAfH7W8FW2hWrwlIdYtdaTaxfA/exec'; // SUBSTITUA PELO SEU NOVO URL
+const GOOGLE_SHEET_VENDAS_URL = 'https://script.google.com/macros/s/AKfycbxlGfstFZ_7MN4UjXZQU8q57ELoOck9fwNZ2hJH07raQvn09v-VnLoceYzkQCbfGHkn/exec';
 
 let sessao = JSON.parse(sessionStorage.getItem('stage_session'));
 let comparativoAtual = 'diario';
@@ -182,7 +182,7 @@ async function fazerLogin() {
         sessionStorage.setItem('stage_session', JSON.stringify(sessao));
         erro.innerHTML = '<i class="fas fa-check-circle"></i> Login realizado! Redirecionando...';
         erro.style.color = '#2ed573';
-        if (document.getElementById('lembrar')?.checked) localStorage.setItem('stage_remember', usuario);
+        if (document.getElementById('lembrar') && document.getElementById('lembrar').checked) localStorage.setItem('stage_remember', usuario);
         setTimeout(() => { if (user.tipo === 'admin') mostrarAdmin(); else mostrarVendedor(); }, 600);
     } else {
         erro.innerHTML = '<i class="fas fa-times-circle"></i> Usuário ou senha inválidos!';
@@ -246,66 +246,65 @@ function ensureStageBadgeStyles() {
     if (document.getElementById('stage-badge-styles')) return;
     const style = document.createElement('style');
     style.id = 'stage-badge-styles';
-    style.textContent = `
-        @keyframes stage-fire-glow {
-            0% { box-shadow: 0 0 10px #ff4500, 0 0 20px #ff8c00, 0 0 30px #ff4500; transform: rotate(-8deg) scale(1); }
-            50% { box-shadow: 0 0 20px #ff6347, 0 0 40px #ff4500, 0 0 60px #ff6347; transform: rotate(-5deg) scale(1.08); }
-            100% { box-shadow: 0 0 10px #ff4500, 0 0 20px #ff8c00, 0 0 30px #ff4500; transform: rotate(-8deg) scale(1); }
-        }
-        .stage-new-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 54px;
-            height: 24px;
-            padding: 0 10px;
-            border-radius: 999px;
-            background: linear-gradient(135deg,#ff8c00,#ff4500);
-            color: #fff;
-            font-weight: 800;
-            font-size: 11px;
-            text-transform: uppercase;
-            transform: rotate(-8deg);
-            text-shadow: 0 0 10px #fff, 0 0 20px #ff4500;
-            animation: stage-fire-glow 1.2s ease-in-out infinite;
-        }
-        @keyframes stage-bonus-pulse {
-            0%,100%{transform:scale(1);box-shadow:0 0 20px rgba(255,100,0,0.7);}
-            50%{transform:scale(1.1);box-shadow:0 0 35px rgba(255,80,0,1);}
-        }
-        .stage-bonus-widget {
-            position:fixed; bottom:22px; right:22px; width:80px; height:80px; border-radius:50%;
-            background: radial-gradient(circle at top left,#ffd700,#ff4500);
-            color:#fff; display:flex; align-items:center; justify-content:center; text-align:center;
-            line-height:1.2; font-size:11px; font-weight:900;
-            box-shadow:0 0 35px rgba(255,100,0,0.9); cursor:pointer; z-index:9999;
-            animation: stage-bonus-pulse 1.4s ease-in-out infinite;
-        }
-        .stage-bonus-widget:hover { transform:scale(1.12); }
-        .stage-bonus-modal-overlay {
-            position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8);
-            display:flex; align-items:center; justify-content:center; z-index:10000;
-        }
-        .stage-bonus-modal {
-            width: min(500px, calc(100vw - 30px)); border-radius:32px;
-            background:linear-gradient(145deg,#1a1f2b,#0d0f14); padding:25px 20px;
-            box-shadow:0 0 60px rgba(255,100,0,0.5); color:#fff; text-align:center; position:relative;
-            border: 1px solid rgba(255,140,0,0.3);
-        }
-        .stage-bonus-modal h2 { margin:0 0 10px; font-size:26px; color:#ffd700; }
-        .stage-bonus-modal p { margin:8px 0; font-size:14px; color:#ddd; }
-        .stage-bonus-modal .stage-prize {
-            margin:15px auto; padding:15px; border-radius:20px;
-            background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);
-            font-size:14px; color:#ffd700; font-weight:700; text-align:left;
-        }
-        .stage-bonus-modal .stage-prize strong { color:#fff; }
-        .stage-bonus-modal .stage-close-btn {
-            margin-top:18px; padding:10px 20px; border:none; border-radius:30px;
-            background:#ff5722; color:#fff; font-weight:700; cursor:pointer;
-            font-size:14px;
-        }
-    `;
+    style.textContent = '' +
+        '@keyframes stage-fire-glow {' +
+            '0% { box-shadow: 0 0 10px #ff4500, 0 0 20px #ff8c00, 0 0 30px #ff4500; transform: rotate(-8deg) scale(1); }' +
+            '50% { box-shadow: 0 0 20px #ff6347, 0 0 40px #ff4500, 0 0 60px #ff6347; transform: rotate(-5deg) scale(1.08); }' +
+            '100% { box-shadow: 0 0 10px #ff4500, 0 0 20px #ff8c00, 0 0 30px #ff4500; transform: rotate(-8deg) scale(1); }' +
+        '}' +
+        '.stage-new-badge {' +
+            'display: inline-flex;' +
+            'align-items: center;' +
+            'justify-content: center;' +
+            'min-width: 54px;' +
+            'height: 24px;' +
+            'padding: 0 10px;' +
+            'border-radius: 999px;' +
+            'background: linear-gradient(135deg,#ff8c00,#ff4500);' +
+            'color: #fff;' +
+            'font-weight: 800;' +
+            'font-size: 11px;' +
+            'text-transform: uppercase;' +
+            'transform: rotate(-8deg);' +
+            'text-shadow: 0 0 10px #fff, 0 0 20px #ff4500;' +
+            'animation: stage-fire-glow 1.2s ease-in-out infinite;' +
+        '}' +
+        '@keyframes stage-bonus-pulse {' +
+            '0%,100%{transform:scale(1);box-shadow:0 0 20px rgba(255,100,0,0.7);}' +
+            '50%{transform:scale(1.1);box-shadow:0 0 35px rgba(255,80,0,1);}' +
+        '}' +
+        '.stage-bonus-widget {' +
+            'position:fixed; bottom:22px; right:22px; width:80px; height:80px; border-radius:50%;' +
+            'background: radial-gradient(circle at top left,#ffd700,#ff4500);' +
+            'color:#fff; display:flex; align-items:center; justify-content:center; text-align:center;' +
+            'line-height:1.2; font-size:11px; font-weight:900;' +
+            'box-shadow:0 0 35px rgba(255,100,0,0.9); cursor:pointer; z-index:9999;' +
+            'animation: stage-bonus-pulse 1.4s ease-in-out infinite;' +
+        '}' +
+        '.stage-bonus-widget:hover { transform:scale(1.12); }' +
+        '.stage-bonus-modal-overlay {' +
+            'position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8);' +
+            'display:flex; align-items:center; justify-content:center; z-index:10000;' +
+        '}' +
+        '.stage-bonus-modal {' +
+            'width: min(500px, calc(100vw - 30px)); border-radius:32px;' +
+            'background:linear-gradient(145deg,#1a1f2b,#0d0f14); padding:25px 20px;' +
+            'box-shadow:0 0 60px rgba(255,100,0,0.5); color:#fff; text-align:center; position:relative;' +
+            'border: 1px solid rgba(255,140,0,0.3);' +
+        '}' +
+        '.stage-bonus-modal h2 { margin:0 0 10px; font-size:26px; color:#ffd700; }' +
+        '.stage-bonus-modal p { margin:8px 0; font-size:14px; color:#ddd; }' +
+        '.stage-bonus-modal .stage-prize {' +
+            'margin:15px auto; padding:15px; border-radius:20px;' +
+            'background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);' +
+            'font-size:14px; color:#ffd700; font-weight:700; text-align:left;' +
+        '}' +
+        '.stage-bonus-modal .stage-prize strong { color:#fff; }' +
+        '.stage-bonus-modal .stage-close-btn {' +
+            'margin-top:18px; padding:10px 20px; border:none; border-radius:30px;' +
+            'background:#ff5722; color:#fff; font-weight:700; cursor:pointer;' +
+            'font-size:14px;' +
+        '}';
     document.head.appendChild(style);
 }
 
@@ -345,23 +344,21 @@ function mostrarModalBonusAtivo() {
     const overlay = document.createElement('div');
     overlay.id = 'stage-bonus-modal-overlay';
     overlay.className = 'stage-bonus-modal-overlay';
-    overlay.innerHTML = `
-        <div class="stage-bonus-modal">
-            <h2>🔥 Bônus Ativo!</h2>
-            <p>Temos ${ativa.length} ${ativa.length === 1 ? 'promoção' : 'promoções'} ativa${ativa.length > 1 ? 's' : ''}. Confira os detalhes:</p>
-            ${ativa.map(p => `
-                <div class="stage-prize" style="margin-bottom:10px;">
-                    <div style="font-size:14px;">📌 <strong>${p.tipo.toUpperCase()}</strong></div>
-                    <div style="font-size:13px;">🎯 Meta: <strong>${p.quantidade}</strong></div>
-                    <div style="font-size:13px;">📅 Período: <strong>${new Date(p.inicio).toLocaleDateString('pt-BR')} → ${new Date(p.fim).toLocaleDateString('pt-BR')}</strong></div>
-                    <div style="font-size:15px; color:#ffd700; font-weight:800;">🏆 Prêmio: ${p.premio}</div>
-                </div>
-            `).join('')}
-            <p style="color:#ffddb3; font-size:13px;">Continue vendendo para garantir seu prêmio!</p>
-            <button class="stage-close-btn" onclick="fecharModalBonusAtivo()">Entendido!</button>
-        </div>
-    `;
-    overlay.onclick = e => { if (e.target === overlay) fecharModalBonusAtivo(); };
+    overlay.innerHTML = '<div class="stage-bonus-modal">' +
+        '<h2>🔥 Bônus Ativo!</h2>' +
+        '<p>Temos ' + ativa.length + ' ' + (ativa.length === 1 ? 'promoção' : 'promoções') + ' ativa' + (ativa.length > 1 ? 's' : '') + '. Confira os detalhes:</p>' +
+        ativa.map(function(p) {
+            return '<div class="stage-prize" style="margin-bottom:10px;">' +
+                '<div style="font-size:14px;">📌 <strong>' + p.tipo.toUpperCase() + '</strong></div>' +
+                '<div style="font-size:13px;">🎯 Meta: <strong>' + p.quantidade + '</strong></div>' +
+                '<div style="font-size:13px;">📅 Período: <strong>' + new Date(p.inicio).toLocaleDateString('pt-BR') + ' → ' + new Date(p.fim).toLocaleDateString('pt-BR') + '</strong></div>' +
+                '<div style="font-size:15px; color:#ffd700; font-weight:800;">🏆 Prêmio: ' + p.premio + '</div>' +
+                '</div>';
+        }).join('') +
+        '<p style="color:#ffddb3; font-size:13px;">Continue vendendo para garantir seu prêmio!</p>' +
+        '<button class="stage-close-btn" onclick="fecharModalBonusAtivo()">Entendido!</button>' +
+        '</div>';
+    overlay.onclick = function(e) { if (e.target === overlay) fecharModalBonusAtivo(); };
     document.body.appendChild(overlay);
 }
 
@@ -411,7 +408,7 @@ async function sincronizarUsuariosDaNuvem() {
       });
 
       salvarDB();
-      if (document.getElementById('secao-cadastro')?.classList.contains('section-active')) {
+      if (document.getElementById('secao-cadastro') && document.getElementById('secao-cadastro').classList.contains('section-active')) {
         carregarUsuarios();
       }
     }
@@ -585,7 +582,7 @@ async function buscarPendentesDaNuvem() {
                     sessionStorage.setItem('stage_notificados_pendentes', JSON.stringify(idsNotificados));
                 }
             }
-            if (document.getElementById('secao-ativacoes')?.classList.contains('section-active')) carregarAtivacoes();
+            if (document.getElementById('secao-ativacoes') && document.getElementById('secao-ativacoes').classList.contains('section-active')) carregarAtivacoes();
         }
     } catch (err) { console.warn('Erro ao buscar pendentes:', err); }
 }
@@ -636,18 +633,18 @@ async function buscarVendasAprovadasDaNuvem() {
                 instalacaoStatus: v.Instalação || 'Aguardando',
                 dataCriacao: v.DataCriacao || '',
                 observacao: v.Observacao || '',
-                ativadoPor: v['Ativado Por'] || '',
+                ativadoPor: v['AtivadoPor'] || '',
                 createdAt: v.CreatedAt ? parseInt(v.CreatedAt) : (v['Data Aprovação'] ? new Date(v['Data Aprovação']).getTime() : Date.now())
             }));
             const pendentesLocais = DB.ativacoes.filter(a => a.status !== 'Aprovado');
             DB.ativacoes = [...pendentesLocais, ...aprovadasNuvem];
             DB.ativacoes.sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
             salvarDB();
-            if (document.getElementById('secao-vendasAprovadas')?.classList.contains('section-active')) carregarVendasAprovadas();
+            if (document.getElementById('secao-vendasAprovadas') && document.getElementById('secao-vendasAprovadas').classList.contains('section-active')) carregarVendasAprovadas();
             if (sessao.tipo === 'admin') carregarDashboard();
             if (sessao.tipo === 'vendedor') {
-                if (document.getElementById('secao-controleVendas')?.classList.contains('section-active')) carregarControleVendas();
-                if (document.getElementById('secao-instalacoes')?.classList.contains('section-active')) carregarInstalacoes();
+                if (document.getElementById('secao-controleVendas') && document.getElementById('secao-controleVendas').classList.contains('section-active')) carregarControleVendas();
+                if (document.getElementById('secao-instalacoes') && document.getElementById('secao-instalacoes').classList.contains('section-active')) carregarInstalacoes();
             }
         }
     } catch (err) { console.warn('Erro ao buscar vendas aprovadas:', err); }
@@ -658,7 +655,8 @@ function carregarAtivacoes(pagina = paginaAtualAtivacoes) {
     const tabela = document.getElementById('tabelaAtivacoes');
     if (!tabela) return;
     let naoAprovadas = DB.ativacoes.filter(a => a.status !== 'Aprovado').reverse();
-    const termo = document.getElementById('buscaAtivacao')?.value.trim().toLowerCase();
+    const elBusca = document.getElementById('buscaAtivacao');
+    const termo = elBusca ? elBusca.value.trim().toLowerCase() : '';
     if (termo) {
         naoAprovadas = naoAprovadas.filter(a => {
             const texto = `${a.nomeCompleto} ${a.produto} ${a.vendedorNome} ${a.status} ${a.tratandoPor || ''}`.toLowerCase();
@@ -721,7 +719,7 @@ async function abrirModalAtivacao(id) {
 
     try {
         const resp = await fetchFromGS('consultarTratando', { uuid: a.id });
-        const lockAtual = resp?.tratandoPor;
+        const lockAtual = resp ? resp.tratandoPor : null;
         if (lockAtual) {
             if (lockAtual !== sessao.nome) {
                 alert(`⚠️ Esta venda está sendo tratada por ${lockAtual}. Aguarde.`);
@@ -825,39 +823,39 @@ async function cancelarEdicaoAtivacao() {
 async function fecharModalAtivacao() {
     const a = findAtivacaoById(vendaSendoVisualizada);
     if (a) {
-        const novoStatus = document.getElementById('editStatus')?.value || a.status;
-        a.observacao = document.getElementById('editObservacao')?.value || '';
-        a.nomeCompleto = document.getElementById('editNomeCompleto')?.value || '';
-        a.nomeMae = document.getElementById('editNomeMae')?.value || '';
-        a.dataNasc = document.getElementById('editDataNasc')?.value || '';
-        a.cpf = document.getElementById('editCpf')?.value || '';
-        a.rg = document.getElementById('editRg')?.value || '';
-        a.orgaoExpeditor = document.getElementById('editOrgaoExpeditor')?.value || '';
-        a.dataExpedicao = document.getElementById('editDataExpedicao')?.value || '';
-        a.email = document.getElementById('editEmail')?.value || '';
-        a.telefone1 = document.getElementById('editTelefone1')?.value || '';
-        a.telefone2 = document.getElementById('editTelefone2')?.value || '';
-        a.cep = document.getElementById('editCep')?.value || '';
-        a.logradouro = document.getElementById('editLogradouro')?.value || '';
-        a.numero = document.getElementById('editNumero')?.value || '';
-        a.complemento = document.getElementById('editComplemento')?.value || '';
-        a.bairro = document.getElementById('editBairro')?.value || '';
-        a.uf = document.getElementById('editUf')?.value || '';
-        a.cidade = document.getElementById('editCidade')?.value || '';
-        a.pontoReferencia = document.getElementById('editPontoReferencia')?.value || '';
-        a.velocidade = document.getElementById('editVelocidade')?.value || '';
-        a.produto = document.getElementById('editProduto')?.value || '';
+        const novoStatus = document.getElementById('editStatus') ? document.getElementById('editStatus').value : a.status;
+        a.observacao = document.getElementById('editObservacao') ? document.getElementById('editObservacao').value : '';
+        a.nomeCompleto = document.getElementById('editNomeCompleto') ? document.getElementById('editNomeCompleto').value : '';
+        a.nomeMae = document.getElementById('editNomeMae') ? document.getElementById('editNomeMae').value : '';
+        a.dataNasc = document.getElementById('editDataNasc') ? document.getElementById('editDataNasc').value : '';
+        a.cpf = document.getElementById('editCpf') ? document.getElementById('editCpf').value : '';
+        a.rg = document.getElementById('editRg') ? document.getElementById('editRg').value : '';
+        a.orgaoExpeditor = document.getElementById('editOrgaoExpeditor') ? document.getElementById('editOrgaoExpeditor').value : '';
+        a.dataExpedicao = document.getElementById('editDataExpedicao') ? document.getElementById('editDataExpedicao').value : '';
+        a.email = document.getElementById('editEmail') ? document.getElementById('editEmail').value : '';
+        a.telefone1 = document.getElementById('editTelefone1') ? document.getElementById('editTelefone1').value : '';
+        a.telefone2 = document.getElementById('editTelefone2') ? document.getElementById('editTelefone2').value : '';
+        a.cep = document.getElementById('editCep') ? document.getElementById('editCep').value : '';
+        a.logradouro = document.getElementById('editLogradouro') ? document.getElementById('editLogradouro').value : '';
+        a.numero = document.getElementById('editNumero') ? document.getElementById('editNumero').value : '';
+        a.complemento = document.getElementById('editComplemento') ? document.getElementById('editComplemento').value : '';
+        a.bairro = document.getElementById('editBairro') ? document.getElementById('editBairro').value : '';
+        a.uf = document.getElementById('editUf') ? document.getElementById('editUf').value : '';
+        a.cidade = document.getElementById('editCidade') ? document.getElementById('editCidade').value : '';
+        a.pontoReferencia = document.getElementById('editPontoReferencia') ? document.getElementById('editPontoReferencia').value : '';
+        a.velocidade = document.getElementById('editVelocidade') ? document.getElementById('editVelocidade').value : '';
+        a.produto = document.getElementById('editProduto') ? document.getElementById('editProduto').value : '';
         a.plano = a.produto;
-        a.valor = document.getElementById('editValor')?.value || '';
-        a.vencimento = document.getElementById('editVencimento')?.value || '';
-        a.formaPagamento = document.getElementById('editFormaPagamento')?.value || '';
-        a.hp = document.getElementById('editHp')?.value || '';
-        a.viabilidade = document.getElementById('editViabilidade')?.value || '';
-        a.planoTipo = document.getElementById('editPlanoTipo')?.value || '';
-        a.tipoAprovacao = document.getElementById('editTipoAprovacao')?.value || '';
-        a.contrato = document.getElementById('infoContrato')?.value || '';
-        a.infoData = document.getElementById('infoData')?.value || '';
-        a.infoPeriodo = document.getElementById('infoPeriodo')?.value || '';
+        a.valor = document.getElementById('editValor') ? document.getElementById('editValor').value : '';
+        a.vencimento = document.getElementById('editVencimento') ? document.getElementById('editVencimento').value : '';
+        a.formaPagamento = document.getElementById('editFormaPagamento') ? document.getElementById('editFormaPagamento').value : '';
+        a.hp = document.getElementById('editHp') ? document.getElementById('editHp').value : '';
+        a.viabilidade = document.getElementById('editViabilidade') ? document.getElementById('editViabilidade').value : '';
+        a.planoTipo = document.getElementById('editPlanoTipo') ? document.getElementById('editPlanoTipo').value : '';
+        a.tipoAprovacao = document.getElementById('editTipoAprovacao') ? document.getElementById('editTipoAprovacao').value : '';
+        a.contrato = document.getElementById('infoContrato') ? document.getElementById('infoContrato').value : '';
+        a.infoData = document.getElementById('infoData') ? document.getElementById('infoData').value : '';
+        a.infoPeriodo = document.getElementById('infoPeriodo') ? document.getElementById('infoPeriodo').value : '';
 
         if (novoStatus === 'Aprovado' && a.status !== 'Aprovado') {
             if (!a.contrato || !a.infoData || !a.infoPeriodo) {
@@ -914,7 +912,7 @@ async function fecharModalAtivacao() {
                     await buscarPendentesDaNuvem();
                     await buscarVendasAprovadasDaNuvem();
                 } else {
-                    alert('❌ Erro ao aprovar: ' + (resp?.erro || 'Erro desconhecido'));
+                    alert('❌ Erro ao aprovar: ' + (resp ? resp.erro : 'Erro desconhecido'));
                     a.status = 'Pendente';
                     salvarDB();
                 }
@@ -938,13 +936,13 @@ async function fecharModalAtivacao() {
     document.getElementById('modalAtivacao').style.display = 'none';
     vendaSendoVisualizada = null;
     carregarAtivacoes();
-    if (document.getElementById('secao-vendasAprovadas')?.classList.contains('section-active')) carregarVendasAprovadas();
+    if (document.getElementById('secao-vendasAprovadas') && document.getElementById('secao-vendasAprovadas').classList.contains('section-active')) carregarVendasAprovadas();
     if (sessao.tipo === 'admin') carregarDashboard();
 }
 
 function abrirModalInfoAdicional() {
     if (!vendaSendoVisualizada) { alert('Nenhuma venda selecionada.'); return; }
-     carregarDropdownAtivadoPor();
+    carregarDropdownAtivadoPor();
     document.getElementById('modalInfoAdicional').style.display = 'flex';
 }
 
@@ -957,7 +955,8 @@ function salvarInfoAdicional() {
         a.contrato = document.getElementById('infoContrato').value;
         a.infoData = document.getElementById('infoData').value;
         a.infoPeriodo = document.getElementById('infoPeriodo').value;
-        a.ativadoPor = document.getElementById('infoAtivadoPor')?.value || '';
+        const elAtivadoPor = document.getElementById('infoAtivadoPor');
+        a.ativadoPor = elAtivadoPor ? elAtivadoPor.value : '';
         salvarDB();
         postParaGoogleSheets('atualizarInfoAdicional', {
             uuid: a.id,
@@ -976,7 +975,8 @@ function carregarVendasAprovadas(pagina = paginaAtualVendasAprovadas) {
     const tabela = document.getElementById('tabelaVendasAprovadas');
     if (!tabela) return;
     let aprovadas = DB.ativacoes.filter(a => a.status === 'Aprovado').reverse();
-    const filtroData = document.getElementById('filtroDataAprovadas')?.value;
+    const elFiltroData = document.getElementById('filtroDataAprovadas');
+    const filtroData = elFiltroData ? elFiltroData.value : null;
     if (filtroData) {
         const filtroDate = new Date(filtroData + 'T00:00:00');
         aprovadas = aprovadas.filter(a => {
@@ -1123,36 +1123,36 @@ async function salvarEdicaoVenda() {
         alert('Venda não encontrada.');
         return;
     }
-    a.nomeCompleto = document.getElementById('viewNomeCompleto')?.value.trim() || '';
-    a.cpf = document.getElementById('viewCpf')?.value.trim() || '';
-    a.dataNasc = document.getElementById('viewDataNasc')?.value.trim() || '';
-    a.orgaoExpeditor = document.getElementById('viewOrgaoExpeditor')?.value.trim() || '';
-    a.nomeMae = document.getElementById('viewNomeMae')?.value.trim() || '';
-    a.rg = document.getElementById('viewRg')?.value.trim() || '';
-    a.dataExpedicao = document.getElementById('viewDataExpedicao')?.value.trim() || '';
-    a.email = document.getElementById('viewEmail')?.value.trim() || '';
-    a.telefone1 = document.getElementById('viewTelefone1')?.value.trim() || '';
-    a.telefone2 = document.getElementById('viewTelefone2')?.value.trim() || '';
-    a.cep = document.getElementById('viewCep')?.value.trim() || '';
-    a.logradouro = document.getElementById('viewLogradouro')?.value.trim() || '';
-    a.numero = document.getElementById('viewNumero')?.value.trim() || '';
-    a.complemento = document.getElementById('viewComplemento')?.value.trim() || '';
-    a.bairro = document.getElementById('viewBairro')?.value.trim() || '';
-    a.uf = document.getElementById('viewUf')?.value.trim() || '';
-    a.cidade = document.getElementById('viewCidade')?.value.trim() || '';
-    a.pontoReferencia = document.getElementById('viewPontoReferencia')?.value.trim() || '';
-    a.velocidade = document.getElementById('viewVelocidade')?.value.trim() || '';
-    a.produto = document.getElementById('viewProduto')?.value.trim() || '';
+    a.nomeCompleto = document.getElementById('viewNomeCompleto') ? document.getElementById('viewNomeCompleto').value.trim() : '';
+    a.cpf = document.getElementById('viewCpf') ? document.getElementById('viewCpf').value.trim() : '';
+    a.dataNasc = document.getElementById('viewDataNasc') ? document.getElementById('viewDataNasc').value.trim() : '';
+    a.orgaoExpeditor = document.getElementById('viewOrgaoExpeditor') ? document.getElementById('viewOrgaoExpeditor').value.trim() : '';
+    a.nomeMae = document.getElementById('viewNomeMae') ? document.getElementById('viewNomeMae').value.trim() : '';
+    a.rg = document.getElementById('viewRg') ? document.getElementById('viewRg').value.trim() : '';
+    a.dataExpedicao = document.getElementById('viewDataExpedicao') ? document.getElementById('viewDataExpedicao').value.trim() : '';
+    a.email = document.getElementById('viewEmail') ? document.getElementById('viewEmail').value.trim() : '';
+    a.telefone1 = document.getElementById('viewTelefone1') ? document.getElementById('viewTelefone1').value.trim() : '';
+    a.telefone2 = document.getElementById('viewTelefone2') ? document.getElementById('viewTelefone2').value.trim() : '';
+    a.cep = document.getElementById('viewCep') ? document.getElementById('viewCep').value.trim() : '';
+    a.logradouro = document.getElementById('viewLogradouro') ? document.getElementById('viewLogradouro').value.trim() : '';
+    a.numero = document.getElementById('viewNumero') ? document.getElementById('viewNumero').value.trim() : '';
+    a.complemento = document.getElementById('viewComplemento') ? document.getElementById('viewComplemento').value.trim() : '';
+    a.bairro = document.getElementById('viewBairro') ? document.getElementById('viewBairro').value.trim() : '';
+    a.uf = document.getElementById('viewUf') ? document.getElementById('viewUf').value.trim() : '';
+    a.cidade = document.getElementById('viewCidade') ? document.getElementById('viewCidade').value.trim() : '';
+    a.pontoReferencia = document.getElementById('viewPontoReferencia') ? document.getElementById('viewPontoReferencia').value.trim() : '';
+    a.velocidade = document.getElementById('viewVelocidade') ? document.getElementById('viewVelocidade').value.trim() : '';
+    a.produto = document.getElementById('viewProduto') ? document.getElementById('viewProduto').value.trim() : '';
     a.plano = a.produto;
-    a.ativadoPor = document.getElementById('viewAtivadoPor')?.value.trim() || '';
-    a.valor = document.getElementById('viewValor')?.value.trim() || '';
-    a.vencimento = document.getElementById('viewVencimento')?.value.trim() || '';
-    a.formaPagamento = document.getElementById('viewFormaPagamento')?.value.trim() || '';
-    a.hp = document.getElementById('viewHp')?.value.trim() || '';
-    a.viabilidade = document.getElementById('viewViabilidade')?.value.trim() || '';
-    a.planoTipo = document.getElementById('viewPlanoTipo')?.value.trim() || '';
-    a.tipoAprovacao = document.getElementById('viewTipoAprovacao')?.value.trim() || '';
-    a.observacao = document.getElementById('viewObservacao')?.value.trim() || '';
+    a.ativadoPor = document.getElementById('viewAtivadoPor') ? document.getElementById('viewAtivadoPor').value.trim() : '';
+    a.valor = document.getElementById('viewValor') ? document.getElementById('viewValor').value.trim() : '';
+    a.vencimento = document.getElementById('viewVencimento') ? document.getElementById('viewVencimento').value.trim() : '';
+    a.formaPagamento = document.getElementById('viewFormaPagamento') ? document.getElementById('viewFormaPagamento').value.trim() : '';
+    a.hp = document.getElementById('viewHp') ? document.getElementById('viewHp').value.trim() : '';
+    a.viabilidade = document.getElementById('viewViabilidade') ? document.getElementById('viewViabilidade').value.trim() : '';
+    a.planoTipo = document.getElementById('viewPlanoTipo') ? document.getElementById('viewPlanoTipo').value.trim() : '';
+    a.tipoAprovacao = document.getElementById('viewTipoAprovacao') ? document.getElementById('viewTipoAprovacao').value.trim() : '';
+    a.observacao = document.getElementById('viewObservacao') ? document.getElementById('viewObservacao').value.trim() : '';
 
     salvarDB();
     const params = {
@@ -1203,7 +1203,7 @@ async function salvarEdicaoVenda() {
         alert('⚠️ Alterações salvas localmente, mas falha de comunicação.');
     }
     carregarVendasAprovadas();
-    if (sessao?.tipo === 'admin') carregarDashboard();
+    if (sessao && sessao.tipo === 'admin') carregarDashboard();
     document.getElementById('modalVisualizacao').style.display = 'none';
 }
 
@@ -1235,7 +1235,7 @@ async function removerVenda(id) {
             await buscarVendasAprovadasDaNuvem();
             alert('✅ Venda removida com sucesso!');
         } else {
-            alert('❌ Erro ao excluir venda: ' + (resp?.erro || 'Erro desconhecido'));
+            alert('❌ Erro ao excluir venda: ' + (resp ? resp.erro : 'Erro desconhecido'));
         }
     } catch (err) {
         console.error('Erro na exclusão:', err);
@@ -1256,34 +1256,34 @@ function limparFormularioVenda() {
 function enviarVenda() {
     if (!sessao) { alert('Sessão expirada.'); return; }
     const campos = {
-        viabilidade: document.getElementById('vViabilidade')?.value || '',
-        planoTipo: document.getElementById('vPlanoTipo')?.value || '',
-        tipoAprovacao: document.getElementById('vTipoAprovacao')?.value || '',
-        nomeCompleto: document.getElementById('vNomeCompleto')?.value.trim() || '',
-        cpf: document.getElementById('vCpf')?.value.trim() || '',
-        dataNasc: document.getElementById('vDataNasc')?.value || '',
-        orgaoExpeditor: document.getElementById('vOrgaoExpeditor')?.value.trim() || '',
-        nomeMae: document.getElementById('vNomeMae')?.value.trim() || '',
-        rg: document.getElementById('vRg')?.value.trim() || '',
-        dataExpedicao: document.getElementById('vDataExpedicao')?.value || '',
-        email: document.getElementById('vEmail')?.value.trim() || '',
-        telefone1: document.getElementById('vTelefone1')?.value.trim() || '',
-        telefone2: document.getElementById('vTelefone2')?.value.trim() || '',
-        cep: document.getElementById('vCep')?.value.trim() || '',
-        logradouro: document.getElementById('vLogradouro')?.value.trim() || '',
-        numero: document.getElementById('vNumero')?.value.trim() || '',
-        complemento: document.getElementById('vComplemento')?.value.trim() || '',
-        bairro: document.getElementById('vBairro')?.value.trim() || '',
-        uf: document.getElementById('vUf')?.value.trim() || '',
-        cidade: document.getElementById('vCidade')?.value.trim() || '',
-        pontoReferencia: document.getElementById('vPontoReferencia')?.value.trim() || '',
-        velocidade: document.getElementById('vVelocidade')?.value || '',
-        produto: document.getElementById('vPlano')?.value || '',
-        plano: document.getElementById('vPlano')?.value || '',
-        valor: document.getElementById('vValor')?.value || '',
-        vencimento: document.getElementById('vVencimento')?.value || '',
-        formaPagamento: document.getElementById('vFormaPagamento')?.value || '',
-        hp: document.getElementById('vHp')?.value.trim() || ''
+        viabilidade: document.getElementById('vViabilidade') ? document.getElementById('vViabilidade').value : '',
+        planoTipo: document.getElementById('vPlanoTipo') ? document.getElementById('vPlanoTipo').value : '',
+        tipoAprovacao: document.getElementById('vTipoAprovacao') ? document.getElementById('vTipoAprovacao').value : '',
+        nomeCompleto: document.getElementById('vNomeCompleto') ? document.getElementById('vNomeCompleto').value.trim() : '',
+        cpf: document.getElementById('vCpf') ? document.getElementById('vCpf').value.trim() : '',
+        dataNasc: document.getElementById('vDataNasc') ? document.getElementById('vDataNasc').value : '',
+        orgaoExpeditor: document.getElementById('vOrgaoExpeditor') ? document.getElementById('vOrgaoExpeditor').value.trim() : '',
+        nomeMae: document.getElementById('vNomeMae') ? document.getElementById('vNomeMae').value.trim() : '',
+        rg: document.getElementById('vRg') ? document.getElementById('vRg').value.trim() : '',
+        dataExpedicao: document.getElementById('vDataExpedicao') ? document.getElementById('vDataExpedicao').value : '',
+        email: document.getElementById('vEmail') ? document.getElementById('vEmail').value.trim() : '',
+        telefone1: document.getElementById('vTelefone1') ? document.getElementById('vTelefone1').value.trim() : '',
+        telefone2: document.getElementById('vTelefone2') ? document.getElementById('vTelefone2').value.trim() : '',
+        cep: document.getElementById('vCep') ? document.getElementById('vCep').value.trim() : '',
+        logradouro: document.getElementById('vLogradouro') ? document.getElementById('vLogradouro').value.trim() : '',
+        numero: document.getElementById('vNumero') ? document.getElementById('vNumero').value.trim() : '',
+        complemento: document.getElementById('vComplemento') ? document.getElementById('vComplemento').value.trim() : '',
+        bairro: document.getElementById('vBairro') ? document.getElementById('vBairro').value.trim() : '',
+        uf: document.getElementById('vUf') ? document.getElementById('vUf').value.trim() : '',
+        cidade: document.getElementById('vCidade') ? document.getElementById('vCidade').value.trim() : '',
+        pontoReferencia: document.getElementById('vPontoReferencia') ? document.getElementById('vPontoReferencia').value.trim() : '',
+        velocidade: document.getElementById('vVelocidade') ? document.getElementById('vVelocidade').value : '',
+        produto: document.getElementById('vPlano') ? document.getElementById('vPlano').value : '',
+        plano: document.getElementById('vPlano') ? document.getElementById('vPlano').value : '',
+        valor: document.getElementById('vValor') ? document.getElementById('vValor').value : '',
+        vencimento: document.getElementById('vVencimento') ? document.getElementById('vVencimento').value : '',
+        formaPagamento: document.getElementById('vFormaPagamento') ? document.getElementById('vFormaPagamento').value : '',
+        hp: document.getElementById('vHp') ? document.getElementById('vHp').value.trim() : ''
     };
     const obrigatorios = ['nomeCompleto', 'cpf', 'dataNasc', 'email', 'telefone1', 'cep', 'logradouro', 'numero', 'bairro', 'uf', 'cidade', 'velocidade', 'produto', 'valor', 'vencimento', 'formaPagamento'];
     for (let campo of obrigatorios) {
@@ -1318,7 +1318,7 @@ function enviarVenda() {
             limparFormularioVenda();
             DB.ativacoes.unshift({ ...novaAtivacao, id: resp.id });
             salvarDB();
-            if (sessao.tipo === 'vendedor' && document.getElementById('secao-controleVendas')?.classList.contains('section-active')) {
+            if (sessao.tipo === 'vendedor' && document.getElementById('secao-controleVendas') && document.getElementById('secao-controleVendas').classList.contains('section-active')) {
                 carregarControleVendas();
             }
         } else alert('❌ Erro ao enviar. Tente novamente.');
@@ -1460,36 +1460,33 @@ function carregarMetasAtivasVendedor() {
     if (!container) return;
     let html = '';
 
-    // Metas de vendas (pessoal)
     const realizadoMes = DB.ativacoes.filter(a => a.vendedor_id === sessao.id && a.status === 'Aprovado').length;
     const metaVendasMes = DB.metas.mensalVendas || 150;
     const pctVendas = Math.min((realizadoMes / metaVendasMes) * 100, 100).toFixed(1);
-    html += `<div class="meta-vendedor-card">
-        <span class="meta-vendedor-label">🎯 Minha Meta Mensal</span>
-        <span class="meta-vendedor-value">${realizadoMes}/${metaVendasMes}</span>
-        <div class="progresso-bar-container" style="height:8px;margin-top:6px;"><div class="progresso-bar-liquido" style="width:${pctVendas}%;"></div></div>
-    </div>`;
+    html += '<div class="meta-vendedor-card">' +
+        '<span class="meta-vendedor-label">🎯 Minha Meta Mensal</span>' +
+        '<span class="meta-vendedor-value">' + realizadoMes + '/' + metaVendasMes + '</span>' +
+        '<div class="progresso-bar-container" style="height:8px;margin-top:6px;"><div class="progresso-bar-liquido" style="width:' + pctVendas + '%;"></div></div>' +
+        '</div>';
 
-    // Metas de produtos
     DB.metas.produtos.forEach(p => {
         const realizado = DB.ativacoes.filter(a => a.vendedor_id === sessao.id && a.produto === p.produto && a.status === 'Aprovado').length;
         const pctProd = Math.min((realizado / p.mensal) * 100, 100).toFixed(1);
-        html += `<div class="meta-vendedor-card">
-            <span class="meta-vendedor-label">📦 ${p.produto}</span>
-            <span class="meta-vendedor-value">${realizado}/${p.mensal}</span>
-            <div class="progresso-bar-container" style="height:8px;margin-top:6px;"><div class="progresso-bar-liquido" style="width:${pctProd}%;"></div></div>
-        </div>`;
+        html += '<div class="meta-vendedor-card">' +
+            '<span class="meta-vendedor-label">📦 ' + p.produto + '</span>' +
+            '<span class="meta-vendedor-value">' + realizado + '/' + p.mensal + '</span>' +
+            '<div class="progresso-bar-container" style="height:8px;margin-top:6px;"><div class="progresso-bar-liquido" style="width:' + pctProd + '%;"></div></div>' +
+            '</div>';
     });
 
-    // Metas de instalações
     DB.metas.instalacoes.filter(i => i.entidadeId === sessao.id || i.tipo === 'empresa').forEach(i => {
         const instaladas = DB.ativacoes.filter(a => a.vendedor_id === sessao.id && a.instalacaoStatus === 'Instalado').length;
         const pctInst = Math.min((instaladas / i.mensal) * 100, 100).toFixed(1);
-        html += `<div class="meta-vendedor-card">
-            <span class="meta-vendedor-label">🔧 Instalações</span>
-            <span class="meta-vendedor-value">${instaladas}/${i.mensal}</span>
-            <div class="progresso-bar-container" style="height:8px;margin-top:6px;"><div class="progresso-bar-liquido" style="width:${pctInst}%;"></div></div>
-        </div>`;
+        html += '<div class="meta-vendedor-card">' +
+            '<span class="meta-vendedor-label">🔧 Instalações</span>' +
+            '<span class="meta-vendedor-value">' + instaladas + '/' + i.mensal + '</span>' +
+            '<div class="progresso-bar-container" style="height:8px;margin-top:6px;"><div class="progresso-bar-liquido" style="width:' + pctInst + '%;"></div></div>' +
+            '</div>';
     });
 
     container.innerHTML = html || '<div class="meta-vendedor-card"><span class="meta-vendedor-label">Nenhuma meta definida</span></div>';
@@ -1736,7 +1733,7 @@ function carregarDropdownAtivadoPor() {
     const select = document.getElementById('infoAtivadoPor');
     if (!select) return;
     const venda = findAtivacaoById(vendaSendoVisualizada);
-    const selecionado = venda?.ativadoPor || '';
+    const selecionado = venda ? venda.ativadoPor || '' : '';
     select.innerHTML = '<option value="">Selecione</option>' +
         DB.usuarios
             .filter(u => u.ativo && !u.deletedAt)
@@ -1770,14 +1767,14 @@ function cadastrarUsuario() {
         if (resp && resp.ok) {
             console.log('✅ Usuário sincronizado com Google Sheets');
         } else {
-            console.warn('⚠️ Usuário salvo localmente, mas falha ao sincronizar com Google Sheets:', resp?.erro);
+            console.warn('⚠️ Usuário salvo localmente, mas falha ao sincronizar com Google Sheets:', resp ? resp.erro : 'Erro desconhecido');
         }
     }).catch(err => {
         console.warn('⚠️ Erro de rede ao sincronizar usuário:', err);
     });
 
     document.getElementById('formCadastro').style.display = 'none';
-    ['nomeUsuario','usuarioUsuario','senhaUsuario','emailUsuario','equipeUsuario'].forEach(id => document.getElementById(id).value = '');
+    ['nomeUsuario','usuarioUsuario','senhaUsuario','emailUsuario','equipeUsuario'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
     carregarUsuarios();
     alert('✅ Usuário cadastrado com sucesso! (Sincronizando com a nuvem...)');
 }
@@ -1796,7 +1793,7 @@ async function excluirUsuario(id) {
             carregarUsuarios();
             alert('✅ Usuário excluído permanentemente!');
         } else {
-            alert('❌ Erro ao excluir da planilha: ' + (resp?.erro || 'Erro desconhecido'));
+            alert('❌ Erro ao excluir da planilha: ' + (resp ? resp.erro : 'Erro desconhecido'));
         }
     } catch (err) {
         alert('❌ Erro de comunicação.');
@@ -1862,7 +1859,7 @@ async function salvarEdicaoUsuario() {
         if (resp && resp.ok) {
             alert('✅ Usuário atualizado com sucesso!');
         } else {
-            alert('⚠️ Erro ao sincronizar com planilha: ' + (resp?.erro || 'Erro desconhecido'));
+            alert('⚠️ Erro ao sincronizar com planilha: ' + (resp ? resp.erro : 'Erro desconhecido'));
         }
     } catch (err) {
         alert('⚠️ Erro de comunicação. Salvo apenas localmente.');
@@ -2001,8 +1998,8 @@ function carregarVendasPorVendedor(atual, anterior) {
 function carregarVendasPorEquipe(atual, anterior) {
     const equipes = {};
     DB.usuarios.filter(u => u.tipo === 'vendedor' && !u.deletedAt).forEach(u => { const eq = u.equipe || 'Sem equipe'; if (!equipes[eq]) equipes[eq] = { atual: 0, anterior: 0 }; });
-    atual.forEach(v => { const user = DB.usuarios.find(u => u.id === v.vendedor_id); const eq = user?.equipe || 'Sem equipe'; if (equipes[eq]) equipes[eq].atual++; });
-    anterior.forEach(v => { const user = DB.usuarios.find(u => u.id === v.vendedor_id); const eq = user?.equipe || 'Sem equipe'; if (equipes[eq]) equipes[eq].anterior++; });
+    atual.forEach(v => { const user = DB.usuarios.find(u => u.id === v.vendedor_id); const eq = user ? user.equipe || 'Sem equipe' : 'Sem equipe'; if (equipes[eq]) equipes[eq].atual++; });
+    anterior.forEach(v => { const user = DB.usuarios.find(u => u.id === v.vendedor_id); const eq = user ? user.equipe || 'Sem equipe' : 'Sem equipe'; if (equipes[eq]) equipes[eq].anterior++; });
     let html = '<table><thead><tr><th>Equipe</th><th>Atual</th><th>Anterior</th><th>% Variação</th></tr></thead><tbody>';
     Object.entries(equipes).forEach(([nome, valores]) => {
         const variacao = valores.anterior > 0 ? (((valores.atual - valores.anterior) / valores.anterior) * 100).toFixed(1) : (valores.atual > 0 ? 100 : 0);
@@ -2016,7 +2013,7 @@ function carregarVendasPorEquipe(atual, anterior) {
 function carregarRankingRelatorio(atual) {
     const vendedores = DB.usuarios.filter(u => u.tipo === 'vendedor' && !u.deletedAt);
     const ranking = vendedores.map(v => ({ nome: v.nome, vendas: atual.filter(vd => vd.vendedor_id === v.id).length })).sort((a,b) => b.vendas - a.vendas);
-    const maxVendas = ranking[0]?.vendas || 1;
+    const maxVendas = ranking[0] ? ranking[0].vendas || 1 : 1;
     let html = '';
     ranking.forEach((v, i) => {
         const medalha = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '';
@@ -2052,7 +2049,7 @@ function gerarPDF() {
         html += `<tr><td style="padding:6px;">${d.nome}</td><td>${d.atual}</td><td>${d.anterior}</td><td style="color:${corVar};">${variacao >= 0 ? '+' + variacao : variacao}%</td></tr>`;
     });
     html += `</table><div style="text-align:center;margin:20px 0;"><canvas id="graficoPDF" width="500" height="220"></canvas></div><h2 style="font-size:14px;color:#000;border-bottom:2px solid #e74c3c;padding-bottom:5px;">Ranking de Vendedores</h2>`;
-    const maxVendas = dadosVend[0]?.atual || 1;
+    const maxVendas = dadosVend[0] ? dadosVend[0].atual || 1 : 1;
     dadosVend.forEach((v, i) => {
         const pct = Math.round((v.atual / maxVendas) * 100);
         html += `<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;font-size:12px;color:#000;"><span style="font-weight:bold;width:25px;">${i+1}º</span><span style="flex:1;">${v.nome} - ${v.atual} vendas</span><div style="width:120px;height:8px;background:#eee;border-radius:4px;"><div style="width:${pct}%;height:100%;background:#e74c3c;border-radius:4px;"></div></div></div>`;
@@ -2083,9 +2080,12 @@ function carregarMetas() {
     document.getElementById('metaDiariaVendas').value = DB.metas.diariaVendas || 10;
     document.getElementById('metaQuinzenalVendas').value = DB.metas.quinzenalVendas || 75;
     document.getElementById('metaMensalVendas').value = DB.metas.mensalVendas || 150;
-    document.getElementById('metaDiariaEmpresa')?.value = DB.metas.diariaEmpresa || DB.metas.diariaVendas;
-    document.getElementById('metaQuinzenalEmpresa')?.value = DB.metas.quinzenalEmpresa || DB.metas.quinzenalVendas;
-    document.getElementById('metaMensalEmpresa')?.value = DB.metas.mensalEmpresa || DB.metas.mensalVendas;
+    const elDiariaEmp = document.getElementById('metaDiariaEmpresa');
+    if (elDiariaEmp) elDiariaEmp.value = DB.metas.diariaEmpresa || DB.metas.diariaVendas;
+    const elQuinzEmp = document.getElementById('metaQuinzenalEmpresa');
+    if (elQuinzEmp) elQuinzEmp.value = DB.metas.quinzenalEmpresa || DB.metas.quinzenalVendas;
+    const elMensalEmp = document.getElementById('metaMensalEmpresa');
+    if (elMensalEmp) elMensalEmp.value = DB.metas.mensalEmpresa || DB.metas.mensalVendas;
     carregarSelectProdutos();
     const tabelaProd = document.getElementById('tabelaMetasProdutos');
     tabelaProd.innerHTML = DB.metas.produtos.map(p => `<tr>
@@ -2171,9 +2171,12 @@ function salvarMetas() {
     const diaria = parseInt(document.getElementById('metaDiariaVendas').value) || 10;
     const quinzenal = parseInt(document.getElementById('metaQuinzenalVendas').value) || 75;
     const mensal = parseInt(document.getElementById('metaMensalVendas').value) || 150;
-    const diariaEmp = parseInt(document.getElementById('metaDiariaEmpresa')?.value) || diaria;
-    const quinzenalEmp = parseInt(document.getElementById('metaQuinzenalEmpresa')?.value) || quinzenal;
-    const mensalEmp = parseInt(document.getElementById('metaMensalEmpresa')?.value) || mensal;
+    const elDiariaEmp = document.getElementById('metaDiariaEmpresa');
+    const elQuinzEmp = document.getElementById('metaQuinzenalEmpresa');
+    const elMensalEmp = document.getElementById('metaMensalEmpresa');
+    const diariaEmp = elDiariaEmp ? (parseInt(elDiariaEmp.value) || diaria) : diaria;
+    const quinzenalEmp = elQuinzEmp ? (parseInt(elQuinzEmp.value) || quinzenal) : quinzenal;
+    const mensalEmp = elMensalEmp ? (parseInt(elMensalEmp.value) || mensal) : mensal;
     DB.metas.diariaVendas = diaria;
     DB.metas.quinzenalVendas = quinzenal;
     DB.metas.mensalVendas = mensal;
@@ -2207,7 +2210,7 @@ function adicionarProduto() {
             document.getElementById('novoProdutoNome').value = '';
             carregarTabelaProdutos();
             carregarSelectProdutos();
-        } else alert('Erro ao adicionar produto na nuvem: ' + (resp?.erro || ''));
+        } else alert('Erro ao adicionar produto na nuvem: ' + (resp ? resp.erro : ''));
     }).catch(e => { console.warn(e); alert('Erro de comunicação.'); });
 }
 
@@ -2226,7 +2229,7 @@ async function excluirProduto(index) {
                     carregarTabelaProdutos();
                     carregarSelectProdutos();
                 } else {
-                    alert('Erro ao remover produto: ' + (respDel?.erro || ''));
+                    alert('Erro ao remover produto: ' + (respDel ? respDel.erro : ''));
                 }
             } else {
                 alert('Produto não encontrado na nuvem.');
@@ -2604,7 +2607,7 @@ function mostrarModalNovaVenda() {
     modal.className = 'modal-overlay';
     modal.style.display = 'flex';
     modal.style.zIndex = '99999';
-    modal.innerHTML = `<div class="modal-glass modal-parabens modal-vibrando" style="text-align:center;max-width:450px;"><div class="parabens-icon" style="font-size:64px;">🔔</div><h2 style="color:#ffd700;font-size:28px;margin:15px 0;">NOVA VENDA!</h2><p style="color:#fff;font-size:16px;">Uma nova venda foi recebida no sistema.</p><button onclick="fecharModalNovaVenda()" class="btn-glass-primary" style="margin-top:20px;background:#ff4757;cursor:pointer;">Fechar (X)</button></div>`;
+    modal.innerHTML = '<div class="modal-glass modal-parabens modal-vibrando" style="text-align:center;max-width:450px;"><div class="parabens-icon" style="font-size:64px;">🔔</div><h2 style="color:#ffd700;font-size:28px;margin:15px 0;">NOVA VENDA!</h2><p style="color:#fff;font-size:16px;">Uma nova venda foi recebida no sistema.</p><button onclick="fecharModalNovaVenda()" class="btn-glass-primary" style="margin-top:20px;background:#ff4757;cursor:pointer;">Fechar (X)</button></div>';
     document.body.appendChild(modal);
     setTimeout(() => fecharModalNovaVenda(), 8000);
 }
@@ -2644,7 +2647,7 @@ async function adicionarStatusFlag() {
             carregarListaStatusFlags();
             document.getElementById('novoStatusNome').value = '';
         } else {
-            alert('Erro ao adicionar: ' + (resp?.erro || 'Erro desconhecido'));
+            alert('Erro ao adicionar: ' + (resp ? resp.erro : 'Erro desconhecido'));
         }
     } catch (err) {
         alert('Erro de comunicação.');
@@ -2658,9 +2661,9 @@ async function removerStatusFlag(id) {
             DB.statusFlags = DB.statusFlags.filter(f => f.id !== id);
             salvarDB();
             carregarListaStatusFlags();
-            if (document.getElementById('secao-ativacoes')?.classList.contains('section-active')) carregarAtivacoes();
+            if (document.getElementById('secao-ativacoes') && document.getElementById('secao-ativacoes').classList.contains('section-active')) carregarAtivacoes();
         } else {
-            alert('Erro ao remover: ' + (resp?.erro || 'Erro desconhecido'));
+            alert('Erro ao remover: ' + (resp ? resp.erro : 'Erro desconhecido'));
         }
     } catch (err) {
         alert('Erro de comunicação.');
@@ -2786,7 +2789,7 @@ setInterval(() => {
         ]).catch(e => console.warn('Polling falhou:', e))
           .finally(() => { isPolling = false; });
     }
-}, 20000); // 20 segundos
+}, 20000);
 setInterval(() => {
     if (sessao && sessao.tipo === 'admin') {
         sincronizarUsuariosDaNuvem();
@@ -2832,7 +2835,7 @@ function mostrarVendedor() {
     verificarNotificacoesVendedor();
 
     Promise.all([buscarPendentesDaNuvem(), buscarVendasAprovadasDaNuvem()]).then(() => {
-        if (document.getElementById('secao-inicio')?.classList.contains('section-active')) {
+        if (document.getElementById('secao-inicio') && document.getElementById('secao-inicio').classList.contains('section-active')) {
             carregarInicioVendedor();
         }
     }).catch(e => console.warn('Erro ao sincronizar vendas no login do vendedor:', e));
