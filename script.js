@@ -934,7 +934,14 @@ async function fecharModalAtivacao() {
                     await buscarPendentesDaNuvem(); await buscarVendasAprovadasDaNuvem();
                 } else { alert('❌ Erro ao aprovar'); a.status = 'Pendente'; salvarDB(); }
             } else { a.status = 'Pendente'; salvarDB(); }
-        } else { a.status = novoStatus; salvarDB(); }
+        } else {
+            a.status = novoStatus;
+            salvarDB();
+            // 🔥 CORREÇÃO: Atualiza o status na planilha PENDENTES (exceto para "Aprovado")
+            if (novoStatus !== 'Aprovado') {
+                fetchFromGS('atualizarStatus', { uuid: a.id, status: novoStatus });
+            }
+        }
         
         a.tratandoPor = null; salvarDB();
         try { await fetchFromGS('atualizarTratando', { uuid: a.id, tratandoPor: '' }); } catch (e) {}
@@ -945,7 +952,6 @@ async function fecharModalAtivacao() {
     if (document.getElementById('secao-vendasAprovadas') && document.getElementById('secao-vendasAprovadas').classList.contains('section-active')) carregarVendasAprovadas();
     if (sessao.tipo === 'admin') carregarDashboard();
 }
-
 function abrirModalInfoAdicional() {
     if (!vendaSendoVisualizada) { alert('Nenhuma venda selecionada.'); return; }
     carregarDropdownAtivadoPor();
