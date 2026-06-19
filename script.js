@@ -97,7 +97,7 @@ function dataParaBR(d) {
 }
 
 // ===== CONFIGURAÇÕES =====
-const GOOGLE_SHEET_VENDAS_URL = 'https://script.google.com/macros/s/AKfycbxEGFWX55q2f3_Kmtqkx1tQS7IOmpJ1t24IdJ4HmUejzolgz-B-2Y3Ny9lstqRewMir/exec';
+const GOOGLE_SHEET_VENDAS_URL = 'https://script.google.com/macros/s/AKfycbzdNfWk3xCSPtPvpQvHpNzGTo-I9is1QZOw-9PQUFsZOK5IedfACOtNyxEg5YG7IOo/exec';
 
 let sessao = JSON.parse(sessionStorage.getItem('stage_session'));
 let comparativoAtual = 'diario';
@@ -1480,7 +1480,7 @@ function cadastrarUsuario(){
     ['nomeUsuario','usuarioUsuario','senhaUsuario','emailUsuario','equipeUsuario'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
     carregarUsuarios(); alert('✅ Usuário cadastrado!');
 }
-// ===== TOGGLE USUARIO CORRIGIDO (SINCRONIZA COM GS) =====
+// ===== TOGGLE USUARIO CORRIGIDO =====
 function toggleUsuario(id) {
     const u = DB.usuarios.find(u => u.id === id);
     if (!u) return;
@@ -1973,4 +1973,4 @@ document.addEventListener('DOMContentLoaded',()=>{
     if(sessao){sessao.tipo==='admin'?mostrarAdmin():mostrarVendedor();}
     document.addEventListener('keypress',e=>{if(e.key==='Enter'&&document.getElementById('loginScreen').style.display!=='none')fazerLogin();});
     verificarNotificacaoPendente();
-});S
+});
