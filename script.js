@@ -102,7 +102,7 @@ function dataParaBR(d) {
 }
 
 // ===== CONFIGURAÇÕES =====
-const GOOGLE_SHEET_VENDAS_URL = 'https://script.google.com/macros/s/AKfycbx9B3TEtnNB1HfYxfwgshW_FAXyUvmTpYDigFJ7iKQQf8q1NH-bOoXvB_6P-FI9mAEU/exec';
+const GOOGLE_SHEET_VENDAS_URL = 'https://script.google.com/macros/s/AKfycbzWpF-xKu1rTwoy1MVp9Wvow1BTONw4JYinpON0l-RvEJSUftqtNNJqrhgCNC3i12Jl/exec';
 
 let sessao = JSON.parse(sessionStorage.getItem('stage_session'));
 let comparativoAtual = 'diario';
@@ -1035,7 +1035,7 @@ function carregarVendasAprovadas(pagina) {
             '<td><strong>' + (a.nomeCompleto || '—') + '</strong></td>' +
             '<td>' + (a.produto || a.plano || '—') + '</td>' +
             '<td>' + nomeVendedor + '</td>' +
-            '<td>R$ ' + parseFloat(a.valor || 0).toFixed(2).replace('.', ',') + '</td>' +
+            '<td>R$ ' + (parseFloat(String(a.valor || '0').replace(/[R\$\s]/g, '').replace(',', '.')) || 0).toFixed(2).replace('.', ',') + '</td>' +
             '<td>' + dataFormatada + '</td>' +
             '<td>' +
                 '<button onclick="abrirModalVisualizacao(\'' + a.id + '\')" class="btn-glass-sm"><i class="fas fa-eye"></i></button>' +
@@ -1083,7 +1083,7 @@ function abrirModalVisualizacao(id) {
         ['Tel 1', a.telefone1, 'viewTelefone1'], ['Tel 2', a.telefone2, 'viewTelefone2'], ['CEP', a.cep, 'viewCep'],
         ['Logradouro', a.logradouro, 'viewLogradouro'], ['N°', a.numero, 'viewNumero'], ['Complemento', a.complemento, 'viewComplemento'],
         ['Bairro', a.bairro, 'viewBairro'], ['Estado', a.uf, 'viewUf'], ['Cidade', a.cidade, 'viewCidade'],
-        ['Ponto Ref.', a.pontoReferencia, 'viewPontoReferencia'], ['Ativado Por', a.ativadoPor || '—', 'viewAtivadoPor'],
+        ['Ponto Ref.', a.pontoReferencia, 'viewPontoReferencia'], ['Data da Venda', a.data || '', 'viewDataVenda'], ['Ativado Por', a.ativadoPor || '—', 'viewAtivadoPor'],
         ['Velocidade', a.velocidade, 'viewVelocidade'], ['Produto', a.produto || a.plano, 'viewProduto'],
         ['Valor', a.valor, 'viewValor'], ['Vencimento', a.vencimento, 'viewVencimento'], ['Pagamento', a.formaPagamento, 'viewFormaPagamento'],
         ['HP', a.hp, 'viewHp'], ['Viabilidade', a.viabilidade, 'viewViabilidade'], ['Plano Tipo', a.planoTipo, 'viewPlanoTipo'],
@@ -1119,6 +1119,7 @@ async function salvarEdicaoVenda() {
     a.telefone2 = getVal('viewTelefone2'); a.cep = getVal('viewCep'); a.logradouro = getVal('viewLogradouro');
     a.numero = getVal('viewNumero'); a.complemento = getVal('viewComplemento'); a.bairro = getVal('viewBairro');
     a.uf = getVal('viewUf'); a.cidade = getVal('viewCidade'); a.pontoReferencia = getVal('viewPontoReferencia');
+a.data = getVal('viewDataVenda');
     a.velocidade = getVal('viewVelocidade'); a.produto = getVal('viewProduto'); a.plano = a.produto;
     a.ativadoPor = getVal('viewAtivadoPor'); a.valor = getVal('viewValor').replace(/R\$/gi, '').trim();
     a.vencimento = getVal('viewVencimento'); a.formaPagamento = getVal('viewFormaPagamento');
@@ -1131,7 +1132,7 @@ async function salvarEdicaoVenda() {
             rg: a.rg, orgaoExpedidor: a.orgaoExpeditor, dataExpedicao: a.dataExpedicao, email: a.email,
             telefone1: a.telefone1, telefone2: a.telefone2, cep: a.cep, logradouro: a.logradouro,
             numero: a.numero, complemento: a.complemento, bairro: a.bairro, uf: a.uf, cidade: a.cidade,
-            pontoReferencia: a.pontoReferencia, plano: a.produto, velocidade: a.velocidade, valor: a.valor,
+            pontoReferencia: a.pontoReferencia, data: a.data, plano: a.produto, velocidade: a.velocidade, valor: a.valor,
             vencimento: a.vencimento, formaPagamento: a.formaPagamento, hp: a.hp, viabilidade: a.viabilidade,
             planoTipo: a.planoTipo, tipoAprovacao: a.tipoAprovacao, ativadoPor: a.ativadoPor || '',
             observacao: a.observacao, contrato: a.contrato || '', infoData: a.infoData || '',
@@ -1239,7 +1240,7 @@ function carregarControleVendas() {
         return '<tr>' +
             '<td><strong>' + (a.nomeCompleto || '—') + '</strong></td>' +
             '<td>' + (a.plano || a.produto || '—') + '</td>' +
-            '<td>R$ ' + parseFloat(a.valor || 0).toFixed(2).replace('.', ',') + '</td>' +
+            '<td>R$ ' + (parseFloat(String(a.valor || '0').replace(/[R\$\s]/g, '').replace(',', '.')) || 0).toFixed(2).replace('.', ',') + '</td>' +
             '<td><span style="color:' + flag.cor + ';font-weight:600;">● ' + a.status + '</span></td>' +
             '<td>' + (a.data ? formatarBR(a.data) : '—') + '</td>' +
             '<td><button onclick="abrirModalVisualizacao(\'' + a.id + '\')" class="btn-glass-sm"><i class="fas fa-eye"></i></button></td>' +
