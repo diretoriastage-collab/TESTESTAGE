@@ -97,7 +97,7 @@ function dataParaBR(d) {
 }
 
 // ===== CONFIGURAÇÕES =====
-const GOOGLE_SHEET_VENDAS_URL = 'https://script.google.com/macros/s/AKfycbxN0poSbbLDysviXopES4s79E-Roc9KI2uC7JZhT6QDcKiDNLbEmB9LMw0wRhjjGXU/exec';
+const GOOGLE_SHEET_VENDAS_URL = 'https://script.google.com/macros/s/AKfycbx9B3TEtnNB1HfYxfwgshW_FAXyUvmTpYDigFJ7iKQQf8q1NH-bOoXvB_6P-FI9mAEU/exec';
 
 let sessao = JSON.parse(sessionStorage.getItem('stage_session'));
 let comparativoAtual = 'diario';
@@ -705,7 +705,7 @@ async function buscarVendasAprovadasDaNuvem() {
                 status: 'Aprovado',
                 vendedorNome: v.Vendedor || '',
                 vendedor_id: v.VendedorId ? parseInt(v.VendedorId) : null,
-                data: v['Data Envio'] ? formatarBR(v['Data Envio']) : (v['Data Aprovação'] ? formatarBR(v['Data Aprovação']) : hojeBR()),
+                data: v['Data Aprovação'] ? formatarBR(v['Data Aprovação']) : hojeBR(),
                 finalizada: true,
                 instalacaoStatus: v.Instalação || 'Aguardando',
                 dataCriacao: v.DataCriacao || '',
