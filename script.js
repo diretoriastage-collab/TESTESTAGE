@@ -63,6 +63,11 @@ if (!DB.statusFlags.find(f => f.nome === 'Pendente')) {
 }
 DB.usuarios.forEach(u => { if (!u.categoria) u.categoria = u.tipo || 'vendedor'; if (!u.equipe) u.equipe = 'Geral'; });
 
+// ===== CACHE DE SINCRONIZAÇÕES =====
+const CACHE_SYNC = {};
+const CACHE_DURATION = 60000; // 1 minuto
+let debounceTimer;
+
 // ===== FUNÇÕES AUXILIARES DE DATA (PADRÃO BR) =====
 function hojeBR() {
   const d = new Date();
@@ -443,8 +448,9 @@ function obterDataVenda() {
     return hojeBR();
 }
 
-// ===== SINCRONIZAÇÕES GLOBAIS =====
+// ===== SINCRONIZAÇÕES GLOBAIS (COM CACHE) =====
 async function sincronizarUsuariosDaNuvem() {
+  if (CACHE_SYNC['usuarios'] && (Date.now() - CACHE_SYNC['usuarios']) < CACHE_DURATION) return;
   try {
     const resp = await fetchFromGS('listarUsuarios');
     console.log('📥 Usuários recebidos da nuvem:', resp);
@@ -484,6 +490,7 @@ async function sincronizarUsuariosDaNuvem() {
       });
 
       salvarDB();
+      CACHE_SYNC['usuarios'] = Date.now();
       if (document.getElementById('secao-cadastro') && document.getElementById('secao-cadastro').classList.contains('section-active')) {
         carregarUsuarios();
       }
@@ -519,6 +526,7 @@ async function sincronizarStatusFlagsDaNuvem() {
 }
 
 async function sincronizarMetasVendas() {
+  if (CACHE_SYNC['metasVendas'] && (Date.now() - CACHE_SYNC['metasVendas']) < CACHE_DURATION) return;
   try {
     const resp = await fetchFromGS('listarMetasVendas');
     if (resp && resp.metas) {
@@ -529,16 +537,19 @@ async function sincronizarMetasVendas() {
       DB.metas.quinzenalEmpresa = resp.metas.quinzenalEmpresa || DB.metas.quinzenalVendas;
       DB.metas.mensalEmpresa = resp.metas.mensalEmpresa || DB.metas.mensalVendas;
       salvarDB();
+      CACHE_SYNC['metasVendas'] = Date.now();
     }
   } catch (e) { console.warn('Erro ao sincronizar metas de vendas:', e); }
 }
 
 async function sincronizarProdutos() {
+  if (CACHE_SYNC['produtos'] && (Date.now() - CACHE_SYNC['produtos']) < CACHE_DURATION) return;
   try {
     const resp = await fetchFromGS('listarProdutos');
     if (resp && resp.produtos) {
       DB.produtos = resp.produtos.map(p => ({ id: p.id, nome: p.nome }));
       salvarDB();
+      CACHE_SYNC['produtos'] = Date.now();
     }
   } catch (e) { console.warn('Erro ao sincronizar produtos:', e); }
 }
@@ -555,6 +566,7 @@ async function sincronizarMetasProdutos() {
 }
 
 async function sincronizarOpcoesVenda() {
+  if (CACHE_SYNC['opcoesVenda'] && (Date.now() - CACHE_SYNC['opcoesVenda']) < CACHE_DURATION) return;
   try {
     const resp = await fetchFromGS('listarOpcoesVenda');
     if (resp && resp.opcoes) {
@@ -562,6 +574,7 @@ async function sincronizarOpcoesVenda() {
       DB.opcoesVenda.formasPagamento = resp.opcoes.formasPagamento || [];
       DB.opcoesVenda.valores = resp.opcoes.valores || [];
       salvarDB();
+      CACHE_SYNC['opcoesVenda'] = Date.now();
     }
   } catch (e) { console.warn('Erro ao sincronizar opções de venda:', e); }
 }
@@ -746,7 +759,8 @@ function carregarAtivacoes(pagina) {
     paginaAtualAtivacoes = Math.min(pagina, totalPaginas || 1);
     const inicio = (paginaAtualAtivacoes - 1) * itensPorPagina;
     const itensExibidos = naoAprovadas.slice(inicio, inicio + itensPorPagina);
-    tabela.innerHTML = itensExibidos.map(a => {
+    tabela.innerHTML = '';
+    tabela.insertAdjacentHTML('beforeend', itensExibidos.map(a => {
         const idStr = String(a.id);
         const statusFlag = getStatusBadge(a.status);
         return '<tr>' +
@@ -760,7 +774,7 @@ function carregarAtivacoes(pagina) {
                 '<button onclick="removerVenda(\'' + idStr + '\')" class="btn-glass-sm" style="background:rgba(255,71,87,0.2);border-color:#ff4757;color:#ff4757;"><i class="fas fa-trash"></i></button>' +
             '</td>' +
         '</tr>';
-    }).join('') || '<tr><td colspan="6" style="text-align:center;padding:30px;">Nenhuma ativação pendente</td></tr>';
+    }).join('') || '<tr><td colspan="6" style="text-align:center;padding:30px;">Nenhuma ativação pendente</td></tr>');
     atualizarControlesPaginacao('paginacaoAtivacoes', paginaAtualAtivacoes, totalPaginas, total);
 }
 
@@ -784,7 +798,14 @@ function atualizarControlesPaginacao(idContainer, pagina, totalPaginas, totalIte
     if (btnProximo) btnProximo.disabled = pagina >= totalPaginas || totalPaginas === 0;
 }
 
-function filtrarAtivacoes() { paginaAtualAtivacoes = 1; carregarAtivacoes(1); }
+// ===== FILTRAR ATIVAÇÕES COM DEBOUNCE =====
+function filtrarAtivacoes() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+        paginaAtualAtivacoes = 1;
+        carregarAtivacoes(1);
+    }, 300);
+}
 
 // ===== MODAL ATIVAÇÃO (COM TRAVA E APROVAÇÃO) =====
 async function abrirModalAtivacao(id) {
@@ -1005,7 +1026,8 @@ function carregarVendasAprovadas(pagina) {
     paginaAtualVendasAprovadas = Math.min(pagina, totalPaginas || 1);
     const inicio = (paginaAtualVendasAprovadas - 1) * itensPorPagina;
     const itensExibidos = aprovadas.slice(inicio, inicio + itensPorPagina);
-    tabela.innerHTML = itensExibidos.length ? itensExibidos.map(a => {
+    tabela.innerHTML = '';
+    tabela.insertAdjacentHTML('beforeend', itensExibidos.length ? itensExibidos.map(a => {
         const vendedor = DB.usuarios.find(u => u.id === a.vendedor_id);
         const nomeVendedor = vendedor ? vendedor.nome : (a.vendedorNome || 'N/A');
         const dataFormatada = a.data ? formatarBR(a.data) : '—';
@@ -1020,7 +1042,7 @@ function carregarVendasAprovadas(pagina) {
                 (sessao.tipo === 'admin' ? '<button onclick="removerVenda(\'' + a.id + '\')" class="btn-glass-sm" style="background:rgba(255,71,87,0.2);border-color:#ff4757;color:#ff4757;"><i class="fas fa-trash"></i></button>' : '') +
             '</td>' +
         '</tr>';
-    }).join('') : '<tr><td colspan="6" style="text-align:center;padding:30px;">Nenhuma venda aprovada</td></tr>';
+    }).join('') : '<tr><td colspan="6" style="text-align:center;padding:30px;">Nenhuma venda aprovada</td></tr>');
     atualizarControlesPaginacao('paginacaoVendasAprovadas', paginaAtualVendasAprovadas, totalPaginas, total);
 }
 function mudarPaginaVendasAprovadas(direcao) {
@@ -1211,7 +1233,8 @@ function carregarControleVendas() {
     const minhas = DB.ativacoes.filter(a => a.vendedor_id === sessao.id && a.status === 'Aprovado').reverse();
     const tabela = document.getElementById('tabelaControleVendas');
     if (!tabela) return;
-    tabela.innerHTML = minhas.length ? minhas.map(a => {
+    tabela.innerHTML = '';
+    tabela.insertAdjacentHTML('beforeend', minhas.length ? minhas.map(a => {
         const flag = DB.statusFlags.find(f => f.nome === a.status) || { cor: '#fff' };
         return '<tr>' +
             '<td><strong>' + (a.nomeCompleto || '—') + '</strong></td>' +
@@ -1221,14 +1244,15 @@ function carregarControleVendas() {
             '<td>' + (a.data ? formatarBR(a.data) : '—') + '</td>' +
             '<td><button onclick="abrirModalVisualizacao(\'' + a.id + '\')" class="btn-glass-sm"><i class="fas fa-eye"></i></button></td>' +
         '</tr>';
-    }).join('') : '<tr><td colspan="6" style="text-align:center;padding:30px;">Nenhuma venda aprovada</td></tr>';
+    }).join('') : '<tr><td colspan="6" style="text-align:center;padding:30px;">Nenhuma venda aprovada</td></tr>');
 }
 
 function carregarInstalacoes() {
     const aprovadas = DB.ativacoes.filter(a => a.vendedor_id === sessao.id && a.status === 'Aprovado').reverse();
     const tabela = document.getElementById('tabelaInstalacoes');
     if (!tabela) return;
-    tabela.innerHTML = aprovadas.length ? aprovadas.map(a => {
+    tabela.innerHTML = '';
+    tabela.insertAdjacentHTML('beforeend', aprovadas.length ? aprovadas.map(a => {
         const st = a.instalacaoStatus || 'Aguardando';
         return '<tr>' +
             '<td><strong>' + (a.nomeCompleto || '—') + '</strong></td>' +
@@ -1241,7 +1265,7 @@ function carregarInstalacoes() {
             '</select></td>' +
             '<td><button onclick="abrirModalVisualizacao(\'' + a.id + '\')" class="btn-glass-sm"><i class="fas fa-eye"></i></button></td>' +
         '</tr>';
-    }).join('') : '<tr><td colspan="5" style="text-align:center;padding:30px;">Nenhuma venda para instalação</td></tr>';
+    }).join('') : '<tr><td colspan="5" style="text-align:center;padding:30px;">Nenhuma venda para instalação</td></tr>');
 }
 
 async function alterarStatusInstalacao(id, novoStatus) {
@@ -1786,7 +1810,8 @@ function salvarMetas(){
 // ===== PRODUTOS 100% SINCRONIZADO =====
 function carregarTabelaProdutos(){
     const t=document.getElementById('tabelaProdutos');if(!t)return;
-    t.innerHTML=DB.produtos.map((p,i)=>'<tr><td>'+p.nome+'</td><td><button onclick="editarProduto('+i+')" class="btn-glass-sm" style="margin-right:5px;"><i class="fas fa-edit"></i></button><button onclick="excluirProduto('+i+')" class="btn-glass-sm" style="background:rgba(255,71,87,0.2);border-color:#ff4757;color:#ff4757;"><i class="fas fa-trash"></i></button></td></tr>').join('');
+    t.innerHTML='';
+    t.insertAdjacentHTML('beforeend', DB.produtos.map((p,i)=>'<tr><td>'+p.nome+'</td><td><button onclick="editarProduto('+i+')" class="btn-glass-sm" style="margin-right:5px;"><i class="fas fa-edit"></i></button><button onclick="excluirProduto('+i+')" class="btn-glass-sm" style="background:rgba(255,71,87,0.2);border-color:#ff4757;color:#ff4757;"><i class="fas fa-trash"></i></button></td></tr>').join(''));
 }
 function adicionarProduto(){
     const nome = document.getElementById('novoProdutoNome').value.trim();
@@ -1854,14 +1879,15 @@ function carregarOpcoesVenda(){
 }
 function carregarMetasInstalacoes(){
     const tabelaInst = document.getElementById('tabelaMetasInstalacoes');
-    tabelaInst.innerHTML = DB.metas.instalacoes.map(i => '<tr>' +
+    tabelaInst.innerHTML='';
+    tabelaInst.insertAdjacentHTML('beforeend', DB.metas.instalacoes.map(i => '<tr>' +
         '<td>' + (i.tipo === 'vendedor' ? 'Vendedor' : 'Empresa') + '</td>' +
         '<td>' + i.entidade + '</td>' +
         '<td>' + i.diaria + '</td>' +
         '<td>' + i.quinzenal + '</td>' +
         '<td>' + i.mensal + '</td>' +
         '<td><button onclick="removerMetaInstalacao(' + i.id + ')" class="btn-glass-danger" style="padding:4px 10px;font-size:12px;"><i class="fas fa-trash"></i></button></td>' +
-    '</tr>').join('');
+    '</tr>').join(''));
 }
 function toggleMetaInstalacao(){document.getElementById('grupoVendedorInstalacao').style.display=document.getElementById('tipoMetaInstalacao').value==='vendedor'?'block':'none';}
 
@@ -1977,28 +2003,67 @@ function gerarExcel(dados, nomeArquivo) {
     XLSX.writeFile(wb, `${nomeArquivo}.xlsx`);
 }
 
-// ===== POLLING PRINCIPAL =====
+// ===== POLLING PRINCIPAL (SÓ COM ABA VISÍVEL) =====
 let isPolling=false;
-setInterval(()=>{if(sessao&&!isPolling){isPolling=true;Promise.all([buscarPendentesDaNuvem(),buscarVendasAprovadasDaNuvem()]).catch(e=>console.warn(e)).finally(()=>{isPolling=false;});}},20000);
+setInterval(()=>{
+    if (document.visibilityState === 'visible' && sessao && !isPolling){
+        isPolling=true;
+        Promise.all([buscarPendentesDaNuvem(),buscarVendasAprovadasDaNuvem()])
+            .catch(e=>console.warn(e))
+            .finally(()=>{isPolling=false;});
+    }
+},20000);
 setInterval(()=>{if(sessao&&sessao.tipo==='admin')sincronizarUsuariosDaNuvem();},10000);
 
 // ===== LOGOUT E EXIBIÇÃO =====
 function logout(){sessionStorage.removeItem('stage_session');sessionStorage.removeItem('stage_notificados_pendentes');sessao=null;document.getElementById('loginScreen').style.display='flex';document.getElementById('adminScreen').style.display='none';document.getElementById('vendedorScreen').style.display='none';}
-function mostrarAdmin(){
-    document.getElementById('loginScreen').style.display='none';document.getElementById('adminScreen').style.display='flex';document.getElementById('vendedorScreen').style.display='none';
-    document.getElementById('userInfoAdmin').innerHTML='<div style="font-weight:700;">'+sessao.nome+'</div><div style="font-size:11px;color:var(--primary-light);">👑 Administrador</div><div style="font-size:10px;color:rgba(255,255,255,0.4);">'+sessao.email+'</div>';
-    carregarDashboard(); verificarPromocoesAdmin();
-    buscarPendentesDaNuvem(); buscarVendasAprovadasDaNuvem();
-    sincronizarUsuariosDaNuvem(); sincronizarStatusFlagsDaNuvem(); sincronizarMetasVendas();
-    sincronizarProdutos(); sincronizarMetasProdutos(); sincronizarOpcoesVenda(); sincronizarMetasInstalacoes(); sincronizarPromocoes();
+function mostrarAdmin() {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('adminScreen').style.display = 'flex';
+    document.getElementById('vendedorScreen').style.display = 'none';
+    document.getElementById('userInfoAdmin').innerHTML = '<div style="font-weight:700;">' + sessao.nome + '</div><div style="font-size:11px;color:var(--primary-light);">👑 Administrador</div><div style="font-size:10px;color:rgba(255,255,255,0.4);">' + sessao.email + '</div>';
+
+    // carregarDashboard já busca pendentes + aprovadas + monta o dashboard
+    carregarDashboard();
+    verificarPromocoesAdmin();
+
+    // As demais sincronizações podem rodar em paralelo (não dependem uma da outra)
+    Promise.all([
+        sincronizarUsuariosDaNuvem(),
+        sincronizarStatusFlagsDaNuvem(),
+        sincronizarMetasVendas(),
+        sincronizarProdutos(),
+        sincronizarMetasProdutos(),
+        sincronizarOpcoesVenda(),
+        sincronizarMetasInstalacoes(),
+        sincronizarPromocoes()
+    ]);
 }
-function mostrarVendedor(){
-    document.getElementById('loginScreen').style.display='none';document.getElementById('adminScreen').style.display='none';document.getElementById('vendedorScreen').style.display='flex';
-    document.getElementById('userInfoVendedor').innerHTML='<div style="font-weight:700;">'+sessao.nome+'</div><div style="font-size:11px;color:var(--primary-light);">💼 Vendedor</div><div style="font-size:10px;color:rgba(255,255,255,0.4);">'+sessao.email+'</div>';
-    mostrarSecaoVendedor(null,'inicio'); verificarNotificacoesVendedor();
-    Promise.all([buscarPendentesDaNuvem(),buscarVendasAprovadasDaNuvem()]).then(()=>{if(document.getElementById('secao-inicio')&&document.getElementById('secao-inicio').classList.contains('section-active'))carregarInicioVendedor();}).catch(e=>console.warn(e));
-    sincronizarMetasVendas(); sincronizarProdutos(); sincronizarMetasProdutos(); sincronizarOpcoesVenda(); sincronizarMetasInstalacoes();
-    sincronizarPromocoes().then(()=>renderBonusAtivoWidget());
+function mostrarVendedor() {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('adminScreen').style.display = 'none';
+    document.getElementById('vendedorScreen').style.display = 'flex';
+    document.getElementById('userInfoVendedor').innerHTML = '<div style="font-weight:700;">' + sessao.nome + '</div><div style="font-size:11px;color:var(--primary-light);">💼 Vendedor</div><div style="font-size:10px;color:rgba(255,255,255,0.4);">' + sessao.email + '</div>';
+
+    mostrarSecaoVendedor(null, 'inicio');
+    verificarNotificacoesVendedor();
+
+    // Busca dados principais e sincronizações em paralelo
+    Promise.all([
+        buscarPendentesDaNuvem(),
+        buscarVendasAprovadasDaNuvem(),
+        sincronizarMetasVendas(),
+        sincronizarProdutos(),
+        sincronizarMetasProdutos(),
+        sincronizarOpcoesVenda(),
+        sincronizarMetasInstalacoes(),
+        sincronizarPromocoes()
+    ]).then(() => {
+        if (document.getElementById('secao-inicio') && document.getElementById('secao-inicio').classList.contains('section-active')) {
+            carregarInicioVendedor();
+        }
+        renderBonusAtivoWidget();
+    }).catch(e => console.warn(e));
 }
 
 // ===== FECHAR MODAIS COM ESC =====
@@ -2035,4 +2100,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     if(sessao){sessao.tipo==='admin'?mostrarAdmin():mostrarVendedor();}
     document.addEventListener('keypress',e=>{if(e.key==='Enter'&&document.getElementById('loginScreen').style.display!=='none')fazerLogin();});
     verificarNotificacaoPendente();
+    // Substitui o oninput por um event listener (debounce)
+    const busca = document.getElementById('buscaAtivacao');
+    if (busca) busca.addEventListener('input', filtrarAtivacoes);
 });
