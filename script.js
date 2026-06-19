@@ -97,7 +97,7 @@ function dataParaBR(d) {
 }
 
 // ===== CONFIGURAÇÕES =====
-const GOOGLE_SHEET_VENDAS_URL = 'https://script.google.com/macros/s/AKfycbzdNfWk3xCSPtPvpQvHpNzGTo-I9is1QZOw-9PQUFsZOK5IedfACOtNyxEg5YG7IOo/exec';
+const GOOGLE_SHEET_VENDAS_URL = 'https://script.google.com/macros/s/AKfycbzeG0cb8-O24tTTMaEVr-O-j3YhHO1XrVP9gIPrm3xqr6pwouXgThnuKJtseH2jfWU6/exec';
 
 let sessao = JSON.parse(sessionStorage.getItem('stage_session'));
 let comparativoAtual = 'diario';
@@ -924,7 +924,8 @@ async function fecharModalAtivacao() {
                     plano: a.produto, velocidade: a.velocidade, valor: a.valor, vencimento: a.vencimento,
                     formaPagamento: a.formaPagamento, hp: a.hp, viabilidade: a.viabilidade, planoTipo: a.planoTipo,
                     tipoAprovacao: a.tipoAprovacao, contrato: a.contrato, infoData: a.infoData, infoPeriodo: a.infoPeriodo,
-                    vendedorNome: a.vendedorNome, vendedorId: a.vendedor_id, ativadoPor: a.ativadoPor
+                    vendedorNome: a.vendedorNome, vendedorId: a.vendedor_id, ativadoPor: a.ativadoPor,
+                    observacao: a.observacao
                 });
                 if (resp && resp.ok) {
                     alert('✅ Venda aprovada!');
@@ -937,9 +938,17 @@ async function fecharModalAtivacao() {
         } else {
             a.status = novoStatus;
             salvarDB();
-            // 🔥 CORREÇÃO: Atualiza o status na planilha PENDENTES (exceto para "Aprovado")
+            // Atualiza o status E a observação na planilha PENDENTES
             if (novoStatus !== 'Aprovado') {
-                fetchFromGS('atualizarStatus', { uuid: a.id, status: novoStatus });
+                fetchFromGS('atualizarPendente', {
+                    uuid: a.id,
+                    status: novoStatus,
+                    observacao: a.observacao,
+                    contrato: a.contrato,
+                    infoData: a.infoData,
+                    infoPeriodo: a.infoPeriodo,
+                    ativadoPor: a.ativadoPor
+                });
             }
         }
         
@@ -981,7 +990,10 @@ function carregarVendasAprovadas(pagina) {
     if (!pagina) pagina = paginaAtualVendasAprovadas;
     const tabela = document.getElementById('tabelaVendasAprovadas');
     if (!tabela) return;
-    let aprovadas = DB.ativacoes.filter(a => a.status === 'Aprovado'); // sem reverse, mais novas primeiro
+    let aprovadas = DB.ativacoes
+        .filter(a => a.status === 'Aprovado')
+        .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)); // mais novas primeiro
+
     const elFiltroData = document.getElementById('filtroDataAprovadas');
     const filtroData = elFiltroData ? elFiltroData.value : null;
     if (filtroData) {
@@ -1011,7 +1023,6 @@ function carregarVendasAprovadas(pagina) {
     }).join('') : '<tr><td colspan="6" style="text-align:center;padding:30px;">Nenhuma venda aprovada</td></tr>';
     atualizarControlesPaginacao('paginacaoVendasAprovadas', paginaAtualVendasAprovadas, totalPaginas, total);
 }
-
 function mudarPaginaVendasAprovadas(direcao) {
     if (direcao === 'anterior' && paginaAtualVendasAprovadas > 1) carregarVendasAprovadas(paginaAtualVendasAprovadas - 1);
     else if (direcao === 'proximo') {
@@ -1616,16 +1627,61 @@ function gerarPDF() {
         alert('Nada para gerar PDF.');
         return;
     }
+
+    // Converte o canvas do gráfico em imagem para incluir no PDF
+    const canvas = document.getElementById('graficoVendedores');
+    if (canvas) {
+        const img = document.createElement('img');
+        img.src = canvas.toDataURL('image/png');
+        img.style.width = '100%';
+        img.style.height = 'auto';
+        const graficoContainer = document.querySelector('#relatorioPrint .grafico-container');
+        if (graficoContainer) {
+            graficoContainer.innerHTML = '';
+            graficoContainer.appendChild(img);
+        }
+    }
+
     const modal = document.getElementById('modalPDF');
     const conteudo = document.getElementById('conteudoPDF');
     conteudo.innerHTML = '';
-    conteudo.appendChild(elemento.cloneNode(true));
+
+    // Cria um container com fundo branco e texto escuro
+    const container = document.createElement('div');
+    container.style.background = '#ffffff';
+    container.style.color = '#000000';
+    container.style.padding = '20px';
+    container.style.width = '100%';
+    container.appendChild(elemento.cloneNode(true));
+
+    // Garante que todas as tabelas e textos fiquem legíveis
+    container.querySelectorAll('*').forEach(el => {
+        if (el.style) {
+            el.style.color = '#000000';
+            el.style.background = 'transparent';
+        }
+        if (el.tagName === 'TABLE') {
+            el.style.borderCollapse = 'collapse';
+            el.style.width = '100%';
+        }
+        if (el.tagName === 'TH' || el.tagName === 'TD') {
+            el.style.border = '1px solid #cccccc';
+            el.style.padding = '6px';
+        }
+        if (el.tagName === 'TH') {
+            el.style.background = '#f0f0f0';
+            el.style.fontWeight = 'bold';
+        }
+    });
+
+    conteudo.appendChild(container);
     modal.style.display = 'flex';
+
     html2pdf().set({
         margin: 0.5,
         filename: 'Relatorio_Vendas.pdf',
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
+        html2canvas: { scale: 2, useCORS: true, logging: true },
         jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
     }).from(conteudo).save().then(() => {
         fecharModalPDF();
