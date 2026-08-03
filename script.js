@@ -1239,8 +1239,11 @@ function enviarVenda() {
 }
 
 function carregarControleVendas() {
-    // CORREÇÃO: Converte ambos para string para garantir a comparação, independente de vir como número ou texto da planilha
-    const minhas = DB.ativacoes.filter(a => String(a.vendedor_id) === String(sessao.id) && a.status === 'Aprovado').reverse();
+    // Filtra as vendas do vendedor e ordena da MAIS RECENTE para a MAIS ANTIGA (igual ao Admin)
+    const minhas = DB.ativacoes
+        .filter(a => String(a.vendedor_id) === String(sessao.id) && a.status === 'Aprovado')
+        .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    
     const tabela = document.getElementById('tabelaControleVendas');
     if (!tabela) return;
     tabela.innerHTML = '';
