@@ -1239,7 +1239,8 @@ function enviarVenda() {
 }
 
 function carregarControleVendas() {
-    const minhas = DB.ativacoes.filter(a => a.vendedor_id === sessao.id && a.status === 'Aprovado').reverse();
+    // CORREÇÃO: Converte ambos para string para garantir a comparação, independente de vir como número ou texto da planilha
+    const minhas = DB.ativacoes.filter(a => String(a.vendedor_id) === String(sessao.id) && a.status === 'Aprovado').reverse();
     const tabela = document.getElementById('tabelaControleVendas');
     if (!tabela) return;
     tabela.innerHTML = '';
@@ -1255,7 +1256,6 @@ function carregarControleVendas() {
         '</tr>';
     }).join('') : '<tr><td colspan="6" style="text-align:center;padding:30px;">Nenhuma venda aprovada</td></tr>');
 }
-
 function carregarInstalacoes() {
     const aprovadas = DB.ativacoes.filter(a => a.vendedor_id === sessao.id && a.status === 'Aprovado').reverse();
     const tabela = document.getElementById('tabelaInstalacoes');
