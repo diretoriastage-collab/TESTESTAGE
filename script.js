@@ -102,7 +102,7 @@ function dataParaBR(d) {
 }
 
 // ===== CONFIGURAÇÕES =====
-const GOOGLE_SHEET_VENDAS_URL = 'https://script.google.com/macros/s/AKfycbwFnwLtIgyYh9hC8OYbQrdO1oH6LK7i68iWXAbs-4xu7Py6nanLF_IqxeND90ngr-Gy/exec';
+const GOOGLE_SHEET_VENDAS_URL = 'https://script.google.com/macros/s/AKfycbx32NvMahq0kS3TMgfe_mhD5FOwzwkjS-iWT7mcpGtELQiwhO3rwWQ1Oqr9SFbxVD6g/exec';
 
 let sessao = JSON.parse(sessionStorage.getItem('stage_session'));
 let comparativoAtual = 'diario';
@@ -630,6 +630,7 @@ async function buscarPendentesDaNuvem() {
                     pontoReferencia: p['Ponto Ref.'] || '',
                     produto: p.Plano || '',
                     plano: p.Plano || '',
+                    origem: p.Origem || '', // <-- ADICIONADO AQUI
                     velocidade: p.Velocidade || '',
                     valor: p.Valor || '',
                     vencimento: p.Vencimento || '',
@@ -704,6 +705,7 @@ async function buscarVendasAprovadasDaNuvem() {
                 pontoReferencia: v['Ponto Ref.'] || '',
                 produto: v.Plano || '',
                 plano: v.Plano || '',
+                origem: v.Origem || '',
                 velocidade: v.Velocidade || '',
                 valor: v['Valor (R$)'] || '0',
                 vencimento: v.Vencimento || '',
@@ -862,7 +864,7 @@ async function abrirModalAtivacao(id) {
         '<div class="input-group"><label>Viabilidade</label><input value="' + (a.viabilidade || '') + '" id="editViabilidade"></div>' +
         '<div class="input-group"><label>Plano Tipo</label><input value="' + (a.planoTipo || '') + '" id="editPlanoTipo"></div>' +
         '<div class="input-group"><label>Tipo Aprov.</label><input value="' + (a.tipoAprovacao || '') + '" id="editTipoAprovacao"></div>' +
-        '<div class="input-group"><label>Origem</label><input value="' + (a.origem || '') + '" id="editOrigem"></div>' +  // <-- ADICIONADO ORIGEM
+        '<div class="input-group"><label>Origem</label><input value="' + (a.origem || '') + '" id="editOrigem"></div>' +
         '<div class="input-group"><label>Observação</label><textarea id="editObservacao" style="height:38px;">' + (a.observacao || '') + '</textarea></div>' +
     '</div>';
 
@@ -917,7 +919,7 @@ async function fecharModalAtivacao() {
         a.viabilidade = document.getElementById('editViabilidade') ? document.getElementById('editViabilidade').value : '';
         a.planoTipo = document.getElementById('editPlanoTipo') ? document.getElementById('editPlanoTipo').value : '';
         a.tipoAprovacao = document.getElementById('editTipoAprovacao') ? document.getElementById('editTipoAprovacao').value : '';
-        a.origem = document.getElementById('editOrigem') ? document.getElementById('editOrigem').value : ''; // <-- ADICIONADO ORIGEM
+        a.origem = document.getElementById('editOrigem') ? document.getElementById('editOrigem').value : '';
         a.observacao = document.getElementById('editObservacao') ? document.getElementById('editObservacao').value : '';
         a.contrato = document.getElementById('infoContrato') ? document.getElementById('infoContrato').value : '';
         a.infoData = document.getElementById('infoData') ? document.getElementById('infoData').value : '';
@@ -945,7 +947,7 @@ async function fecharModalAtivacao() {
                     formaPagamento: a.formaPagamento, hp: a.hp, viabilidade: a.viabilidade, planoTipo: a.planoTipo,
                     tipoAprovacao: a.tipoAprovacao, contrato: a.contrato, infoData: a.infoData, infoPeriodo: a.infoPeriodo,
                     vendedorNome: a.vendedorNome, vendedorId: a.vendedor_id, ativadoPor: a.ativadoPor,
-                    observacao: a.observacao, origem: a.origem // <-- ADICIONADO ORIGEM
+                    observacao: a.observacao, origem: a.origem
                 });
                 if (resp && resp.ok) {
                     alert('✅ Venda aprovada!');
@@ -1087,7 +1089,7 @@ function abrirModalVisualizacao(id) {
         ['Valor', a.valor, 'viewValor'], ['Vencimento', a.vencimento, 'viewVencimento'], ['Pagamento', a.formaPagamento, 'viewFormaPagamento'],
         ['HP', a.hp, 'viewHp'], ['Viabilidade', a.viabilidade, 'viewViabilidade'], ['Plano Tipo', a.planoTipo, 'viewPlanoTipo'],
         ['Tipo Aprov.', a.tipoAprovacao, 'viewTipoAprovacao'], 
-        ['Origem', a.origem || '', 'viewOrigem'], // <-- ADICIONADO ORIGEM
+        ['Origem', a.origem || '', 'viewOrigem'],
         ['Observação', a.observacao || '', 'viewObservacao']
     ];
     campos.forEach(([label, valor, id]) => {
@@ -1128,7 +1130,7 @@ a.data = getVal('viewDataVenda');
     a.vencimento = getVal('viewVencimento'); a.formaPagamento = getVal('viewFormaPagamento');
     a.hp = getVal('viewHp'); a.viabilidade = getVal('viewViabilidade'); a.planoTipo = getVal('viewPlanoTipo');
     a.tipoAprovacao = getVal('viewTipoAprovacao'); a.observacao = getVal('viewObservacao');
-    a.origem = getVal('viewOrigem'); // <-- ADICIONADO ORIGEM
+    a.origem = getVal('viewOrigem');
     salvarDB();
     try {
         const resp = await fetchFromGS('editarVenda', {
@@ -1141,7 +1143,7 @@ a.data = getVal('viewDataVenda');
             planoTipo: a.planoTipo, tipoAprovacao: a.tipoAprovacao, ativadoPor: a.ativadoPor || '',
             observacao: a.observacao, contrato: a.contrato || '', infoData: a.infoData || '',
             infoPeriodo: a.infoPeriodo || '', vendedorNome: a.vendedorNome || '', vendedorId: a.vendedor_id || '',
-            origem: a.origem || '' // <-- ADICIONADO ORIGEM
+            origem: a.origem || ''
         });
         if (resp && resp.ok) alert('✅ Dados atualizados!'); else alert('⚠️ Falha ao sincronizar.');
     } catch (e) { alert('⚠️ Erro de comunicação.'); }
