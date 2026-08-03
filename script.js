@@ -102,7 +102,7 @@ function dataParaBR(d) {
 }
 
 // ===== CONFIGURAÇÕES =====
-const GOOGLE_SHEET_VENDAS_URL = 'https://script.google.com/macros/s/AKfycbzWpF-xKu1rTwoy1MVp9Wvow1BTONw4JYinpON0l-RvEJSUftqtNNJqrhgCNC3i12Jl/exec';
+const GOOGLE_SHEET_VENDAS_URL = 'https://script.google.com/macros/s/AKfycbxfYTFHkAHFRle5NNdmG0ANZ8wxxoiFkb7mNggOwynyL_Eyzp3V0BezC_bP-MyWguauow/exec';
 
 let sessao = JSON.parse(sessionStorage.getItem('stage_session'));
 let comparativoAtual = 'diario';
@@ -813,33 +813,25 @@ async function abrirModalAtivacao(id) {
     if (!a) { alert('Venda não encontrada'); return; }
     if (a.newBadge) { a.newBadge = false; salvarDB(); }
 
-    try {
-        const resp = await fetchFromGS('consultarTratando', { uuid: a.id });
-        const lockAtual = resp ? resp.tratandoPor : null;
-        if (lockAtual && lockAtual !== sessao.nome) {
-            alert('⚠️ Esta venda está sendo tratada por ' + lockAtual + '. Aguarde.');
-            return;
-        }
-        if (lockAtual === sessao.nome) await fetchFromGS('atualizarTratando', { uuid: a.id, tratandoPor: '' });
-    } catch (e) {
-        if (a.tratandoPor && a.tratandoPor !== sessao.nome) {
-            alert('⚠️ Esta venda está sendo tratada por ' + a.tratandoPor + '. Aguarde.');
-            return;
-        }
+    // Verificação rápida local primeiro (não bloqueia)
+    if (a.tratandoPor && a.tratandoPor !== sessao.nome) {
+        alert('⚠️ Esta venda está sendo tratada por ' + a.tratandoPor + '. Aguarde.');
+        return;
     }
 
     vendaSendoVisualizada = a.id;
     a.tratandoPor = sessao.nome;
     salvarDB();
-    try { await fetchFromGS('atualizarTratando', { uuid: a.id, tratandoPor: sessao.nome }); } catch (e) {
-        alert('Erro de comunicação ao travar a venda.');
-        a.tratandoPor = null; salvarDB(); vendaSendoVisualizada = null; return;
-    }
 
+    // Dispara a trava em segundo plano (não bloqueia a abertura do modal)
+    fetchFromGS('atualizarTratando', { uuid: a.id, tratandoPor: sessao.nome }).catch(() => {});
+
+    // Monta o HTML do status primeiro (leve)
     const statusOptions = DB.statusFlags.map(f =>
         '<option value="' + f.nome + '" ' + (a.status === f.nome ? 'selected' : '') + '>' + f.nome + '</option>'
     ).join('');
 
+    // Constrói o HTML com insertAdjacentHTML para performance
     const html = '' +
     '<div class="form-grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 10px;">' +
         '<div class="input-group"><label>Status</label><select id="editStatus">' + statusOptions + '</select></div>' +
@@ -872,7 +864,12 @@ async function abrirModalAtivacao(id) {
         '<div class="input-group"><label>Tipo Aprov.</label><input value="' + (a.tipoAprovacao || '') + '" id="editTipoAprovacao"></div>' +
         '<div class="input-group"><label>Observação</label><textarea id="editObservacao" style="height:38px;">' + (a.observacao || '') + '</textarea></div>' +
     '</div>';
-    document.getElementById('conteudoModalAtivacao').innerHTML = html;
+
+    // Usa insertAdjacentHTML para renderização mais rápida
+    const conteudo = document.getElementById('conteudoModalAtivacao');
+    conteudo.innerHTML = '';
+    conteudo.insertAdjacentHTML('beforeend', html);
+
     document.getElementById('infoContrato').value = a.contrato || '';
     document.getElementById('infoData').value = a.infoData || '';
     document.getElementById('infoPeriodo').value = a.infoPeriodo || '';
@@ -1101,8 +1098,10 @@ function abrirModalVisualizacao(id) {
         '<button onclick="fecharModalVisualizacao()" class="btn-glass-sm" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);">Fechar</button>';
     if (sessao.tipo === 'admin') html += '<button onclick="salvarEdicaoVenda()" class="btn-glass-sm" style="background:#2ed573;color:#0b0b0b;">Salvar alterações</button>';
     html += '</div>';
-    document.getElementById('conteudoModalVisualizacao').innerHTML = html;
-    document.getElementById('modalVisualizacao').style.display = 'flex';
+    const conteudo = document.getElementById('conteudoModalVisualizacao');
+conteudo.innerHTML = '';
+conteudo.insertAdjacentHTML('beforeend', html);
+document.getElementById('modalVisualizacao').style.display = 'flex';
 }
 
 function fecharModalVisualizacao() { document.getElementById('modalVisualizacao').style.display = 'none'; }
@@ -1303,13 +1302,24 @@ function carregarInicioVendedor() {
     if (!sessao) return;
     document.getElementById('metaMensalVendedor').textContent = DB.metas.mensalVendas || 150;
     document.getElementById('metaDiariaVendedor').textContent = DB.metas.diariaVendas || 10;
+    
     const vendas = DB.ativacoes.filter(a => a.vendedor_id === sessao.id && a.status === 'Aprovado' && a.finalizada !== false);
-    const total = vendas.length;
+    
+    // 🛑 CORREÇÃO: Filtrar apenas as vendas do MÊS ATUAL
+    const hoje = new Date();
+    const vendasMes = vendas.filter(v => {
+        const p = v.data.split('/');
+        return p.length === 3 && parseInt(p[2]) === hoje.getFullYear() && parseInt(p[1]) === (hoje.getMonth() + 1);
+    });
+    
+    const total = vendasMes.length;
     const pct = Math.min((total / (DB.metas.mensalVendas || 150)) * 100, 100).toFixed(1);
+    
     document.getElementById('realizadoVendedorMes').textContent = total;
     document.getElementById('faltamVendedorMes').textContent = Math.max((DB.metas.mensalVendas || 150) - total, 0);
     document.getElementById('totalVendasMesVendedor').textContent = total;
     document.getElementById('barraProgressoVendedor').style.width = pct + '%';
+    
     atualizarPainelInstalacoes();
     carregarMetasAtivasVendedor();
 }
@@ -1318,48 +1328,104 @@ function carregarMetasAtivasVendedor() {
     const container = document.getElementById('painelMetasVendedor');
     if (!container) return;
     let html = '';
-    const realizadoMes = DB.ativacoes.filter(a => a.vendedor_id === sessao.id && a.status === 'Aprovado').length;
+    
+    const vendasAprovadas = DB.ativacoes.filter(a => a.vendedor_id === sessao.id && a.status === 'Aprovado');
+    const hoje = new Date();
+    
+    // 🛑 CORREÇÃO: Filtrar apenas as vendas do MÊS ATUAL
+    const vendasMes = vendasAprovadas.filter(v => {
+        const p = v.data.split('/');
+        return p.length === 3 && parseInt(p[2]) === hoje.getFullYear() && parseInt(p[1]) === (hoje.getMonth() + 1);
+    });
+    
+    const realizadoMes = vendasMes.length;
     const metaVendasMes = DB.metas.mensalVendas || 150;
     const pctVendas = Math.min((realizadoMes / metaVendasMes) * 100, 100).toFixed(1);
     html += '<div class="meta-vendedor-card"><span class="meta-vendedor-label">🎯 Minha Meta Mensal</span><span class="meta-vendedor-value">' + realizadoMes + '/' + metaVendasMes + '</span><div class="progresso-bar-container" style="height:8px;margin-top:6px;"><div class="progresso-bar-liquido" style="width:' + pctVendas + '%;"></div></div></div>';
+    
     DB.metas.produtos.forEach(p => {
-        const realizado = DB.ativacoes.filter(a => a.vendedor_id === sessao.id && a.produto === p.produto && a.status === 'Aprovado').length;
-        const pctProd = Math.min((realizado / p.mensal) * 100, 100).toFixed(1);
-        html += '<div class="meta-vendedor-card"><span class="meta-vendedor-label">📦 ' + p.produto + '</span><span class="meta-vendedor-value">' + realizado + '/' + p.mensal + '</span><div class="progresso-bar-container" style="height:8px;margin-top:6px;"><div class="progresso-bar-liquido" style="width:' + pctProd + '%;"></div></div></div>';
+        const realizado = DB.ativacoes.filter(a => a.vendedor_id === sessao.id && a.produto === p.produto && a.status === 'Aprovado');
+        // 🛑 CORREÇÃO: Filtrar pelo mês atual
+        const realizadoMesProd = realizado.filter(v => {
+            const pData = v.data.split('/');
+            return pData.length === 3 && parseInt(pData[2]) === hoje.getFullYear() && parseInt(pData[1]) === (hoje.getMonth() + 1);
+        }).length;
+        const pctProd = Math.min((realizadoMesProd / p.mensal) * 100, 100).toFixed(1);
+        html += '<div class="meta-vendedor-card"><span class="meta-vendedor-label">📦 ' + p.produto + '</span><span class="meta-vendedor-value">' + realizadoMesProd + '/' + p.mensal + '</span><div class="progresso-bar-container" style="height:8px;margin-top:6px;"><div class="progresso-bar-liquido" style="width:' + pctProd + '%;"></div></div></div>';
     });
+    
     DB.metas.instalacoes.forEach(i => {
         if (i.tipo === 'empresa' || (i.tipo === 'vendedor' && i.entidadeId === sessao.id)) {
-            const instaladas = DB.ativacoes.filter(a => a.vendedor_id === sessao.id && a.instalacaoStatus === 'Instalado').length;
-            const pctInst = Math.min((instaladas / i.mensal) * 100, 100).toFixed(1);
-            html += '<div class="meta-vendedor-card"><span class="meta-vendedor-label">🔧 Instalações' + (i.tipo === 'vendedor' ? ' (Individual)' : ' (Empresa)') + '</span><span class="meta-vendedor-value">' + instaladas + '/' + i.mensal + '</span><div class="progresso-bar-container" style="height:8px;margin-top:6px;"><div class="progresso-bar-liquido" style="width:' + pctInst + '%;"></div></div></div>';
+            const instaladas = DB.ativacoes.filter(a => a.vendedor_id === sessao.id && a.instalacaoStatus === 'Instalado');
+            // 🛑 CORREÇÃO: Filtrar pelo mês atual
+            const instaladasMes = instaladas.filter(v => {
+                const pData = v.data.split('/');
+                return pData.length === 3 && parseInt(pData[2]) === hoje.getFullYear() && parseInt(pData[1]) === (hoje.getMonth() + 1);
+            }).length;
+            const pctInst = Math.min((instaladasMes / i.mensal) * 100, 100).toFixed(1);
+            html += '<div class="meta-vendedor-card"><span class="meta-vendedor-label">🔧 Instalações' + (i.tipo === 'vendedor' ? ' (Individual)' : ' (Empresa)') + '</span><span class="meta-vendedor-value">' + instaladasMes + '/' + i.mensal + '</span><div class="progresso-bar-container" style="height:8px;margin-top:6px;"><div class="progresso-bar-liquido" style="width:' + pctInst + '%;"></div></div></div>';
         }
     });
+    
     container.innerHTML = html || '<div class="meta-vendedor-card"><span class="meta-vendedor-label">Nenhuma meta definida</span></div>';
 }
-
 function atualizarPainelInstalacoes() {
     const hoje = new Date();
     if (hoje.getDate() <= 10) {
-        let ano = hoje.getFullYear(), mes = hoje.getMonth();
-        if (mes === 0) { mes = 12; ano--; }
+        // Calcula o mês anterior (1 de Julho, mês anterior é Junho)
+        let mesAnterior = hoje.getMonth() - 1; 
+        let anoAnterior = hoje.getFullYear();
+        if (mesAnterior < 0) { mesAnterior = 11; anoAnterior--; }
+
         const vendasAnt = DB.ativacoes.filter(a => a.vendedor_id === sessao.id && a.status === 'Aprovado' && a.finalizada !== false);
-        document.getElementById('instaladosCountVendedor').textContent = vendasAnt.filter(v => v.instalacaoStatus === 'Instalado').length;
-        document.getElementById('canceladosCountVendedor').textContent = vendasAnt.filter(v => v.instalacaoStatus === 'Cancelado').length;
+        
+        // 🛑 CORREÇÃO: Filtrar APENAS as vendas do MÊS ANTERIOR
+        const vendasAntMes = vendasAnt.filter(v => {
+            const p = v.data.split('/');
+            return p.length === 3 && parseInt(p[2]) === anoAnterior && parseInt(p[1]) === (mesAnterior + 1);
+        });
+        
+        document.getElementById('instaladosCountVendedor').textContent = vendasAntMes.filter(v => v.instalacaoStatus === 'Instalado').length;
+        document.getElementById('canceladosCountVendedor').textContent = vendasAntMes.filter(v => v.instalacaoStatus === 'Cancelado').length;
         document.getElementById('painelInstalacoesAnterior').style.display = 'block';
-    } else { document.getElementById('painelInstalacoesAnterior').style.display = 'none'; }
+    } else { 
+        document.getElementById('painelInstalacoesAnterior').style.display = 'none'; 
+    }
 }
 
 function buscarCep() {
-    const cep = document.getElementById('vCep').value.replace(/\D/g, '');
-    if (cep.length !== 8) return alert('Digite um CEP válido.');
-    fetch('https://viacep.com.br/ws/' + cep + '/json/').then(r => r.json()).then(d => {
-        if (d.erro) { alert('CEP não encontrado.'); return; }
-        document.getElementById('vLogradouro').value = d.logradouro || '';
-        document.getElementById('vBairro').value = d.bairro || '';
-        document.getElementById('vCidade').value = d.localidade || '';
-        document.getElementById('vUf').value = d.uf || '';
-        document.getElementById('vNumero').focus();
-    }).catch(() => alert('Erro ao buscar CEP.'));
+    const cepInput = document.getElementById('vCep');
+    const cep = cepInput.value.replace(/\D/g, '');
+    
+    // Se não tiver 8 dígitos, avisa e para
+    if (cep.length !== 8) {
+        alert('Digite um CEP com 8 dígitos.');
+        return;
+    }
+
+    // Faz a busca na API dos Correios
+    fetch('https://viacep.com.br/ws/' + cep + '/json/')
+        .then(r => r.json())
+        .then(d => {
+            // Se o CEP for inválido
+            if (d.erro) {
+                alert('❌ CEP não encontrado. Preencha os dados manualmente.');
+                // O CEP continua salvo no campo, e os outros campos continuam liberados para digitar.
+                return;
+            }
+            
+            // Se for válido, preenche automaticamente
+            document.getElementById('vLogradouro').value = d.logradouro || '';
+            document.getElementById('vBairro').value = d.bairro || '';
+            document.getElementById('vCidade').value = d.localidade || '';
+            document.getElementById('vUf').value = d.uf || '';
+            
+            // Após preencher, foca no campo de Número para agilizar
+            document.getElementById('vNumero').focus();
+        })
+        .catch(() => {
+            alert('❌ Erro de rede ao buscar CEP. Preencha os dados manualmente.');
+        });
 }
 
 // ===== DASHBOARD ADMIN =====
@@ -1805,6 +1871,10 @@ function salvarMetas(){
     DB.metas.diariaEmpresa=diariaEmp; DB.metas.quinzenalEmpresa=quinzenalEmp; DB.metas.mensalEmpresa=mensalEmp;
     salvarDB();
     fetchFromGS('salvarMetasVendas',{diaria,quinzenal,mensal,diariaEmp,quinzenalEmp,mensalEmp});
+    
+    // 🚨 ESTA É A LINHA QUE FALTAVA:
+    delete CACHE_SYNC['metasVendas']; // Força o sistema a buscar os dados novos na próxima vez
+    
     alert('✅ Metas atualizadas!');
 }
 
